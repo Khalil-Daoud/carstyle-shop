@@ -1,5 +1,5 @@
 ﻿/* Custom Premium Design System for CARSTYLE */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap&display=swap');
+/* Google Fonts are loaded from <head> so they don't chain behind this file. */
 
 /* Respect user's motion preferences globally */
 @media (prefers-reduced-motion: reduce) {
@@ -129,7 +129,7 @@ body.light-theme .whatsapp-float {
 }
 
 /* Theme toggle button visible in light */
-body.light-theme #theme-toggle {
+body.light-theme [data-theme-toggle] {
   background: rgba(0, 0, 0, 0.05) !important;
   color: #0a0a0a !important;
   border-color: rgba(0, 0, 0, 0.12) !important;
@@ -207,13 +207,10 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-card);
   border: 1px solid var(--border-glow);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
               background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
   contain: layout style;
 }
 
@@ -233,7 +230,6 @@ h1, h2, h3, h4, h5, h6 {
   position: relative;
   overflow: hidden;
   transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
-  will-change: transform;
 }
 
 .btn-premium::after {
@@ -342,7 +338,6 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   z-index: 999;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform;
 }
 
 .whatsapp-float:hover {
@@ -370,14 +365,18 @@ header {
   backface-visibility: hidden;
 }
 
-.premium-card img,
-.comparison-slider img {
+/* will-change is only promised while an animation is actually about to run:
+   a permanent promise keeps a compositor layer alive for every card/image. */
+.premium-card:hover,
+.premium-card:hover img,
+.whatsapp-float:hover,
+.btn-premium:hover {
   will-change: transform;
-  transform: translateZ(0);
 }
 
-.slider-handle {
-  will-change: left;
+.comparison-slider.is-dragging .slider-handle,
+.comparison-slider.is-dragging .image-before {
+  will-change: left, clip-path;
 }
 
 .swiper-slide {

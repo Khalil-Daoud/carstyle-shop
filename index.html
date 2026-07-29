@@ -9,33 +9,19 @@
     content="Découvrez CARSTYLE Le Bardo : Spécialiste de la personnalisation, vitres teintées nano-céramique, covering et protection carrosserie PPF en Tunisie.">
 
   <!-- DNS Prefetch for external resources -->
-  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
   <!-- Preconnect for faster resource loading -->
-  <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            deepNoir: 'var(--bg-deep)',
-            anthracite: 'var(--bg-card)',
-            brandRed: '#D90429',
-            metallicGray: 'var(--text-gray)',
-            white: 'var(--text-white)',
-            pureWhite: '#FFFFFF',
-          }
-        }
-      }
-    }
-  </script>
+  <!-- Fonts + pre-built Tailwind stylesheet -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/tailwind.css">
 
   <!-- Custom Styles -->
   <link rel="stylesheet" href="style.css">
@@ -75,7 +61,7 @@
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <!-- Logo -->
       <a href="index.html" class="flex items-center gap-3">
-        <img src="assets/logo.png" alt="CARSTYLE Logo"
+        <img src="assets/logo.webp" alt="CARSTYLE Logo"
           class="h-10 w-10 object-contain rounded-full border border-white/10" fetchpriority="high" decoding="async">
         <span class="text-2xl font-black tracking-wider text-pureWhite">CAR<span
             class="text-brandRed">STYLE</span></span>
@@ -92,10 +78,10 @@
 
       <!-- Theme Switcher & CTA -->
       <div class="hidden md:flex items-center gap-4">
-        <button id="theme-toggle"
+        <button data-theme-toggle
           class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
           aria-label="Toggle Theme">
-          <i id="theme-icon" class="fa-solid fa-moon"></i>
+          <i data-theme-icon class="fa-solid fa-moon"></i>
         </button>
         <a href="contact.html#devis"
           class="btn-premium px-6 py-2.5 rounded-full bg-brandRed text-pureWhite text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed">
@@ -105,10 +91,10 @@
 
       <!-- Mobile Controls -->
       <div class="flex items-center gap-4 md:hidden">
-        <button id="theme-toggle"
+        <button data-theme-toggle
           class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
           aria-label="Toggle Theme">
-          <i id="theme-icon" class="fa-solid fa-moon"></i>
+          <i data-theme-icon class="fa-solid fa-moon"></i>
         </button>
         <button id="mobile-menu-btn" class="text-white text-2xl focus:outline-none" aria-label="Ouvrir le menu">
           <i class="fa-solid fa-bars"></i>
@@ -133,10 +119,8 @@
   <section class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
     <!-- Cinematic Background Video -->
     <div class="absolute inset-0 z-0 hero-video-wrapper">
-      <video autoplay muted loop playsinline preload="none" class="w-full h-full object-cover opacity-40"
-        style="will-change: transform; transform: translateZ(0);">
-        <source src="assets/vids/6157904-Hd 1920 1080 30Fps.mp4" type="video/mp4">
-      </video>
+      <video id="hero-video" muted loop playsinline preload="none" poster="assets/vids/hero-poster.webp"
+        data-src="assets/vids/hero-720.mp4" class="w-full h-full object-cover opacity-40"></video>
       <div class="absolute inset-0 bg-gradient-to-t from-deepNoir via-deepNoir/60 to-transparent"></div>
     </div>
 
@@ -254,7 +238,7 @@
         <!-- Vitres teintées -->
         <div class="premium-card rounded-2xl overflow-hidden flex flex-col">
           <div class="h-64 overflow-hidden relative">
-            <img src="assets/tinted.png" alt="Vitres teintées CARSTYLE"
+            <img src="assets/tinted.webp" alt="Vitres teintées CARSTYLE"
               class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy"
               decoding="async">
             <div
@@ -279,7 +263,7 @@
         <!-- PPF -->
         <div class="premium-card rounded-2xl overflow-hidden flex flex-col">
           <div class="h-64 overflow-hidden relative">
-            <img src="assets/ppf.png" alt="Film PPF CARSTYLE"
+            <img src="assets/ppf.webp" alt="Film PPF CARSTYLE"
               class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy"
               decoding="async">
             <div
@@ -304,7 +288,7 @@
         <!-- Covering -->
         <div class="premium-card rounded-2xl overflow-hidden flex flex-col">
           <div class="h-64 overflow-hidden relative">
-            <img src="assets/covering.png" alt="Covering automobile CARSTYLE"
+            <img src="assets/covering.webp" alt="Covering automobile CARSTYLE"
               class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy"
               decoding="async">
             <div
@@ -347,11 +331,11 @@
         <div class="comparison-slider aspect-video">
           <!-- After (Background) -->
           <div class="image-after">
-            <img src="assets/covering.png" alt="Après Covering Premium CARSTYLE" loading="lazy" decoding="async">
+            <img src="assets/covering.webp" alt="Après Covering Premium CARSTYLE" loading="lazy" decoding="async">
           </div>
           <!-- Before (Clipped overlay) -->
           <div class="image-before">
-            <img src="assets/hero.png" alt="Avant Protection CARSTYLE" loading="lazy" decoding="async">
+            <img src="assets/hero.webp" alt="Avant Protection CARSTYLE" loading="lazy" decoding="async">
           </div>
           <!-- Control handle -->
           <div class="slider-handle">
@@ -386,7 +370,7 @@
         <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
           class="premium-card rounded-2xl overflow-hidden group block relative">
           <div class="aspect-square overflow-hidden relative">
-            <img src="assets/covering.png" alt="Instagram Post covering"
+            <img src="assets/covering.webp" alt="Instagram Post covering"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy"
               decoding="async">
             <!-- Hover overlay -->
@@ -403,7 +387,7 @@
         <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
           class="premium-card rounded-2xl overflow-hidden group block relative">
           <div class="aspect-square overflow-hidden relative">
-            <img src="assets/ppf.png" alt="Instagram Post PPF"
+            <img src="assets/ppf.webp" alt="Instagram Post PPF"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy"
               decoding="async">
             <div
@@ -419,7 +403,7 @@
         <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
           class="premium-card rounded-2xl overflow-hidden group block relative">
           <div class="aspect-square overflow-hidden relative">
-            <img src="assets/tinted.png" alt="Instagram Post tinted"
+            <img src="assets/tinted.webp" alt="Instagram Post tinted"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy"
               decoding="async">
             <div
@@ -435,7 +419,7 @@
         <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
           class="premium-card rounded-2xl overflow-hidden group block relative">
           <div class="aspect-square overflow-hidden relative">
-            <img src="assets/hero.png" alt="Instagram Post hero"
+            <img src="assets/hero.webp" alt="Instagram Post hero"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy"
               decoding="async">
             <div
