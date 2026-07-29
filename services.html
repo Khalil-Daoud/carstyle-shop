@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nos Services Premium | CARSTYLE Accessoires Auto Tunis</title>
+  <meta name="description"
+    content="Découvrez nos prestations haut de gamme à Tunis : films solaires nano-céramique, covering complet, protection carrosserie PPF et plaques personnalisées.">
+
+  <!-- Resource Hints -->
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            deepNoir: 'var(--bg-deep)',
+            anthracite: 'var(--bg-card)',
+            brandRed: '#D90429',
+            metallicGray: 'var(--text-gray)',
+            white: 'var(--text-white)',
+            pureWhite: '#FFFFFF',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('theme') === 'light') {
+          document.documentElement.classList.add('light-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+</head>
+
+<body class="bg-deepNoir text-white min-h-screen flex flex-col">
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/21653933751" target="_blank" rel="noopener noreferrer"
+    class="whatsapp-float flex items-center justify-center" aria-label="Discutez sur WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- Navigation Header -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-deepNoir/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/logo.png" alt="CARSTYLE Logo"
+          class="h-10 w-10 object-contain rounded-full border border-white/10"
+          fetchpriority="high" decoding="async">
+        <span class="text-2xl font-black tracking-wider text-pureWhite">CAR<span
+            class="text-brandRed">STYLE</span></span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 font-medium text-sm uppercase tracking-widest text-metallicGray">
+        <a href="index.html" class="hover:text-brandRed transition-colors">Accueil</a>
+        <a href="services.html" class="text-white hover:text-brandRed transition-colors">Services</a>
+        <a href="realisations.html" class="hover:text-brandRed transition-colors">Réalisations</a>
+        <a href="about.html" class="hover:text-brandRed transition-colors">À propos</a>
+        <a href="contact.html" class="hover:text-brandRed transition-colors">Contact</a>
+      </nav>
+
+      <!-- Theme Switcher & CTA -->
+      <div class="hidden md:flex items-center gap-4">
+        <button id="theme-toggle"
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </button>
+        <a href="contact.html#devis"
+          class="btn-premium px-6 py-2.5 rounded-full bg-brandRed text-pureWhite text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed">
+          Demander un devis
+        </a>
+      </div>
+
+      <!-- Mobile Controls -->
+      <div class="flex items-center gap-4 md:hidden">
+        <button id="theme-toggle"
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </button>
+        <button id="mobile-menu-btn" class="text-white text-2xl focus:outline-none" aria-label="Ouvrir le menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu"
+      class="hidden md:hidden bg-anthracite border-b border-white/5 px-6 py-4 flex flex-col gap-4 text-center font-medium uppercase tracking-widest text-sm text-metallicGray">
+      <a href="index.html" class="py-2 border-b border-white/5">Accueil</a>
+      <a href="services.html" class="text-white py-2 border-b border-white/5">Services</a>
+      <a href="realisations.html" class="py-2 border-b border-white/5">Réalisations</a>
+      <a href="about.html" class="py-2 border-b border-white/5">À propos</a>
+      <a href="contact.html" class="py-2 border-b border-white/5">Contact</a>
+      <a href="contact.html#devis" class="bg-brandRed text-white py-3 rounded-md font-bold text-xs">Demander un
+        devis</a>
+    </div>
+  </header>
+
+  <!-- Hero Services -->
+  <section class="py-32 bg-gradient-to-b from-anthracite to-deepNoir text-center border-b border-white/5">
+    <div class="max-w-4xl mx-auto px-6 mt-10 hero-content">
+      <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-4">NOTRE ATELIER</span>
+      <h1 class="text-4xl md:text-6xl font-black uppercase text-white mb-6">Nos Prestations de Luxe</h1>
+      <p class="text-metallicGray text-base max-w-xl mx-auto font-light">
+        Découvrez notre savoir-faire unique et exigeant pour sublimer, personnaliser et protéger votre automobile au
+        Bardo, Tunis.
+      </p>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="py-24 max-w-7xl mx-auto px-6 flex flex-col gap-24">
+
+    <!-- Service 1: Vitres teintées -->
+    <div id="teinte" class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center premium-card p-8 md:p-12 rounded-3xl">
+      <div>
+        <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">FILMS SOLAIRES</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold uppercase mb-6 text-white">Vitres Teintées Nano-Céramique</h2>
+        <p class="text-metallicGray text-sm md:text-base leading-relaxed mb-6">
+          Nos films teintés de technologie nano-céramique protègent l'habitacle de votre voiture des rayons UV nocifs et
+          de la chaleur étouffante tunisienne, tout en conservant une excellente clarté optique depuis l'intérieur.
+        </p>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-sm text-white">
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Réduction thermique
+            extrême</li>
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Protection 99% contre les
+            UV</li>
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Confidentialité garantie
+          </li>
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Esthétique premium et
+            sportive</li>
+        </ul>
+        <a href="contact.html?service=vitres-teintees#devis"
+          class="btn-premium inline-block px-8 py-3.5 rounded-full bg-brandRed text-white text-xs font-bold uppercase tracking-widest border border-brandRed shadow-lg shadow-brandRed/15 hover:bg-red-700">
+          Estimer le prix
+        </a>
+      </div>
+      <div class="rounded-2xl overflow-hidden h-96">
+        <img src="assets/tinted.png" alt="Vitres teintées de luxe CARSTYLE" class="w-full h-full object-cover">
+      </div>
+    </div>
+
+    <!-- Service 2: PPF -->
+    <div id="ppf"
+      class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center premium-card p-8 md:p-12 rounded-3xl lg:flex-row-reverse">
+      <div class="lg:order-2">
+        <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">PROTECTION CARROSSERIE</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold uppercase mb-6 text-white">Film de Protection Carrosserie (PPF)
+        </h2>
+        <p class="text-metallicGray text-sm md:text-base leading-relaxed mb-6">
+          Protégez la carrosserie de votre véhicule avec un film polyuréthane transparent autorégénérant. Une barrière
+          invisible de haute technologie qui préserve l'éclat de votre peinture d'origine face aux projections
+          routières.
+        </p>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-sm text-white">
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Bouclier anti-rayures</li>
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Propriétés
+            auto-guérissantes</li>
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Fini brillant ou mat
+            premium</li>
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Maintien de la valeur du
+            véhicule</li>
+        </ul>
+        <a href="contact.html?service=ppf#devis"
+          class="btn-premium inline-block px-8 py-3.5 rounded-full bg-brandRed text-white text-xs font-bold uppercase tracking-widest border border-brandRed shadow-lg shadow-brandRed/15 hover:bg-red-700">
+          Réserver un créneau
+        </a>
+      </div>
+      <div class="rounded-2xl overflow-hidden h-96 lg:order-1">
+        <img src="assets/ppf.png" alt="Film protection carrosserie PPF CARSTYLE" class="w-full h-full object-cover">
+      </div>
+    </div>
+
+    <!-- Service 3: Covering -->
+    <div id="covering" class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center premium-card p-8 md:p-12 rounded-3xl">
+      <div>
+        <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">WRAP SUR-MESURE</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold uppercase mb-6 text-white">Covering Automobile Total ou Partiel
+        </h2>
+        <p class="text-metallicGray text-sm md:text-base leading-relaxed mb-6">
+          Modifiez l'allure générale de votre voiture selon vos envies. Nos techniciens qualifiés assurent la pose
+          minutieuse de films de covering durables, offrant des couleurs et des effets texturés incomparables.
+        </p>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-sm text-white">
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Couleurs mates &
+            brillantes</li>
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Effet Carbone, Satin &
+            Métal</li>
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Entièrement réversible
+          </li>
+          <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brandRed"></i> Personnalisation sans
+            limite</li>
+        </ul>
+        <a href="contact.html?service=covering#devis"
+          class="btn-premium inline-block px-8 py-3.5 rounded-full bg-brandRed text-white text-xs font-bold uppercase tracking-widest border border-brandRed shadow-lg shadow-brandRed/15 hover:bg-red-700">
+          Demander une couleur
+        </a>
+      </div>
+      <div class="rounded-2xl overflow-hidden h-96">
+        <img src="assets/covering.png" alt="Covering de supercar CARSTYLE" class="w-full h-full object-cover">
+      </div>
+    </div>
+
+    <!-- Service 4 & 5 Grid: Accessoires & Plaques -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Accessoires -->
+      <div id="accessoires" class="premium-card p-8 md:p-10 rounded-3xl flex flex-col justify-between">
+        <div>
+          <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">ÉQUIPEMENTS LUXE</span>
+          <h2 class="text-2xl md:text-3xl font-extrabold uppercase mb-4 text-white">Accessoires & Équipements
+            Automobiles</h2>
+          <p class="text-metallicGray text-sm leading-relaxed mb-6">
+            Sublimez l'intérieur et l'extérieur de votre véhicule avec notre sélection d'accessoires premium haut de
+            gamme. Kits aérodynamiques, améliorations intérieures, éclairage LED dynamique, et solutions de confort
+            sur-mesure.
+          </p>
+        </div>
+        <a href="contact.html?service=accessoires#devis"
+          class="inline-flex items-center gap-2 text-brandRed hover:text-white font-bold uppercase tracking-widest text-xs transition-colors">
+          Consulter le catalogue <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </a>
+      </div>
+
+      <!-- Plaques -->
+      <div id="plaques" class="premium-card p-8 md:p-10 rounded-3xl flex flex-col justify-between">
+        <div>
+          <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3 font-semibold">SIGNALÉTIQUE
+            PREMIUM</span>
+          <h2 class="text-2xl md:text-3xl font-extrabold uppercase mb-4 text-white">Plaques d'Immatriculation
+            Personnalisées</h2>
+          <p class="text-metallicGray text-sm leading-relaxed mb-6">
+            Profitez d'un service de personnalisation de plaques d'immatriculation avec des finitions en plexiglas ou
+            aluminium à haut relief. Un rendu rigoureusement soigné, professionnel et conforme pour habiller vos
+            pare-chocs.
+          </p>
+        </div>
+        <a href="contact.html?service=plaques#devis"
+          class="inline-flex items-center gap-2 text-brandRed hover:text-white font-bold uppercase tracking-widest text-xs transition-colors">
+          Personnaliser ma plaque <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </a>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-anthracite pt-20 pb-10 border-t border-white/5 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+      <div class="md:col-span-2">
+        <a href="index.html" class="inline-block text-2xl font-black tracking-wider text-white mb-6">CAR<span
+            class="text-brandRed">STYLE</span></a>
+        <p class="text-metallicGray text-sm max-w-sm mb-6 leading-relaxed">
+          Atelier tunisien spécialisé dans la personnalisation esthétique et la protection de véhicules haut de gamme.
+          Le savoir-faire, la précision et la passion.
+        </p>
+        <div class="flex gap-4">
+          <a href="https://www.facebook.com/profile.php?id=100082205727145" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Navigation</h4>
+        <ul class="flex flex-col gap-3 text-sm text-metallicGray">
+          <li><a href="index.html" class="hover:text-brandRed transition-colors">Accueil</a></li>
+          <li><a href="services.html" class="hover:text-brandRed transition-colors">Nos Services</a></li>
+          <li><a href="realisations.html" class="hover:text-brandRed transition-colors">Réalisations</a></li>
+          <li><a href="about.html" class="hover:text-brandRed transition-colors">À Propos</a></li>
+          <li><a href="contact.html" class="hover:text-brandRed transition-colors">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Atelier</h4>
+        <ul class="flex flex-col gap-4 text-sm text-metallicGray">
+          <li class="flex items-start gap-3">
+            <i class="fa-solid fa-location-dot mt-1 text-brandRed"></i>
+            <span>Avenue Bayrem Ettounsi,<br>Le Bardo 2000, Tunisie</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <i class="fa-solid fa-phone text-brandRed"></i>
+            <a href="tel:+21653933751" class="hover:text-brandRed transition-colors">+216 53 933 751</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="max-w-7xl mx-auto px-6 border-t border-white/5 pt-8 text-center text-xs text-metallicGray/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>&copy; 2026 CARSTYLE Accessoires Auto. Tous droits réservés.</p>
+      <p>Conçu pour les passionnés d'automobile.</p>
+    </div>
+  </footer>
+
+  <script src="main.js" defer></script>
+</body>
+
+</html>

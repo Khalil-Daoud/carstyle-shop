@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CARSTYLE | Personnalisation & Protection Automobile Premium Tunis</title>
+  <meta name="description"
+    content="Découvrez CARSTYLE Le Bardo : Spécialiste de la personnalisation, vitres teintées nano-céramique, covering et protection carrosserie PPF en Tunisie.">
+
+  <!-- DNS Prefetch for external resources -->
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+  <!-- Preconnect for faster resource loading -->
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            deepNoir: 'var(--bg-deep)',
+            anthracite: 'var(--bg-card)',
+            brandRed: '#D90429',
+            metallicGray: 'var(--text-gray)',
+            white: 'var(--text-white)',
+            pureWhite: '#FFFFFF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Pre-paint theme: applies saved theme before first render (no flash) -->
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('theme') === 'light') {
+          document.documentElement.classList.add('light-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="icon" type="image/png" href="./assets/logo.png">
+
+
+  <!-- Swiper.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+  <!-- GLightbox CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print"
+    onload="this.media='all'">
+</head>
+
+<body class="bg-deepNoir text-white min-h-screen flex flex-col">
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/21653933751" target="_blank" rel="noopener noreferrer"
+    class="whatsapp-float flex items-center justify-center" aria-label="Discutez sur WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- Navigation Header -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-deepNoir/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/logo.png" alt="CARSTYLE Logo"
+          class="h-10 w-10 object-contain rounded-full border border-white/10" fetchpriority="high" decoding="async">
+        <span class="text-2xl font-black tracking-wider text-pureWhite">CAR<span
+            class="text-brandRed">STYLE</span></span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-8 font-medium text-sm uppercase tracking-widest text-metallicGray">
+        <a href="index.html" class="text-white hover:text-brandRed transition-colors">Accueil</a>
+        <a href="services.html" class="hover:text-brandRed transition-colors">Services</a>
+        <a href="realisations.html" class="hover:text-brandRed transition-colors">Réalisations</a>
+        <a href="about.html" class="hover:text-brandRed transition-colors">À propos</a>
+        <a href="contact.html" class="hover:text-brandRed transition-colors">Contact</a>
+      </nav>
+
+      <!-- Theme Switcher & CTA -->
+      <div class="hidden md:flex items-center gap-4">
+        <button id="theme-toggle"
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </button>
+        <a href="contact.html#devis"
+          class="btn-premium px-6 py-2.5 rounded-full bg-brandRed text-pureWhite text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed">
+          Demander un devis
+        </a>
+      </div>
+
+      <!-- Mobile Controls -->
+      <div class="flex items-center gap-4 md:hidden">
+        <button id="theme-toggle"
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </button>
+        <button id="mobile-menu-btn" class="text-white text-2xl focus:outline-none" aria-label="Ouvrir le menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu"
+      class="hidden md:hidden bg-anthracite border-b border-white/5 px-6 py-4 flex flex-col gap-4 text-center font-medium uppercase tracking-widest text-sm text-metallicGray">
+      <a href="index.html" class="text-white py-2 border-b border-white/5">Accueil</a>
+      <a href="services.html" class="py-2 border-b border-white/5">Services</a>
+      <a href="realisations.html" class="py-2 border-b border-white/5">Réalisations</a>
+      <a href="about.html" class="py-2 border-b border-white/5">À propos</a>
+      <a href="contact.html" class="py-2 border-b border-white/5">Contact</a>
+      <a href="contact.html#devis" class="bg-brandRed text-white py-3 rounded-md font-bold text-xs">Demander un
+        devis</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+    <!-- Cinematic Background Video -->
+    <div class="absolute inset-0 z-0 hero-video-wrapper">
+      <video autoplay muted loop playsinline preload="none" class="w-full h-full object-cover opacity-40"
+        style="will-change: transform; transform: translateZ(0);">
+        <source src="assets/vids/6157904-Hd 1920 1080 30Fps.mp4" type="video/mp4">
+      </video>
+      <div class="absolute inset-0 bg-gradient-to-t from-deepNoir via-deepNoir/60 to-transparent"></div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="relative z-10 max-w-5xl mx-auto px-6 text-center hero-content">
+      <div class="inline-block badge-red px-4 py-1.5 rounded-full mb-6">
+        <i class="fa-solid fa-gem mr-2"></i>CARSTYLE - Atelier Esthétique Premium - Le Bardo
+      </div>
+      <h1 class="text-4xl md:text-7xl font-black tracking-tight text-white uppercase leading-none mb-6">
+        Transformez votre véhicule.<br>
+        <span class="text-brandRed text-glow-red">Protégez son élégance.</span>
+      </h1>
+      <p class="text-lg md:text-xl text-metallicGray max-w-2xl mx-auto mb-10 font-light">
+        Spécialiste de la personnalisation et de la protection automobile premium en Tunisie :
+        vitres teintées nano-céramique, PPF, covering et accessoires sur-mesure.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="contact.html#devis"
+          class="btn-premium w-full sm:w-auto px-8 py-4 rounded-full bg-brandRed text-white text-sm font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed shadow-lg shadow-brandRed/20">
+          Demander un devis
+        </a>
+        <a href="realisations.html"
+          class="w-full sm:w-auto px-8 py-4 rounded-full bg-transparent text-white text-sm font-bold uppercase tracking-widest border border-white/20 hover:border-white hover:bg-white/5 transition-all">
+          Voir nos réalisations
+        </a>
+      </div>
+    </div>
+
+    <!-- Decorative Red Accent Lines -->
+    <div
+      class="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brandRed to-transparent opacity-50">
+    </div>
+  </section>
+
+  <!-- Section Confiance / Notre Engagement -->
+  <!-- <section class="py-24 bg-anthracite/30 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16 section-heading">
+        <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">L'EXCELLENCE SANS
+          COMPROMIS</span>
+        <h2 class="text-3xl md:text-5xl font-extrabold uppercase text-white">Pourquoi Choisir CARSTYLE ?</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div class="premium-card p-8 rounded-2xl text-center">
+          <div
+            class="w-14 h-14 bg-brandRed/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-brandRed/20 text-brandRed text-xl">
+            <i class="fa-solid fa-award"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-3">Expertise</h3>
+          <p class="text-xs text-metallicGray leading-relaxed">Techniciens hautement qualifiés formés aux dernières
+            technologies de pose de films.</p>
+        </div>
+
+        <div class="premium-card p-8 rounded-2xl text-center">
+          <div
+            class="w-14 h-14 bg-brandRed/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-brandRed/20 text-brandRed text-xl">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-3">Matériaux Premium</h3>
+          <p class="text-xs text-metallicGray leading-relaxed">Utilisation exclusive de films et matériaux haut de gamme
+            certifiés.</p>
+        </div>
+
+        <div class="premium-card p-8 rounded-2xl text-center">
+          <div
+            class="w-14 h-14 bg-brandRed/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-brandRed/20 text-brandRed text-xl">
+            <i class="fa-solid fa-wrench"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-3">Travail Pro</h3>
+          <p class="text-xs text-metallicGray leading-relaxed">Précision chirurgicale et finitions invisibles pour
+            chaque élément.</p>
+        </div>
+
+        <div class="premium-card p-8 rounded-2xl text-center">
+          <div
+            class="w-14 h-14 bg-brandRed/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-brandRed/20 text-brandRed text-xl">
+            <i class="fa-solid fa-heart"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-3">Satisfaction</h3>
+          <p class="text-xs text-metallicGray leading-relaxed">Un service irréprochable et un suivi personnalisé pour
+            tous nos clients.</p>
+        </div>
+
+        <div class="premium-card p-8 rounded-2xl text-center">
+          <div
+            class="w-14 h-14 bg-brandRed/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-brandRed/20 text-brandRed text-xl">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-3">Garantie</h3>
+          <p class="text-xs text-metallicGray leading-relaxed">Accompagnement après-vente et garanties solides sur
+            toutes nos prestations.</p>
+        </div>
+      </div>
+    </div>
+  </section> -->
+
+  <!-- Prestations Teaser Section -->
+  <section class="py-24 bg-deepNoir relative">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 section-heading">
+        <div>
+          <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">NOS SOLUTIONS
+            ESTHÉTIQUES</span>
+          <h2 class="text-3xl md:text-5xl font-extrabold uppercase text-white">Services de Précision</h2>
+        </div>
+        <a href="services.html"
+          class="mt-4 md:mt-0 inline-flex items-center gap-2 text-brandRed hover:text-white transition-colors font-bold uppercase tracking-widest text-xs">
+          Voir tous les services <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Vitres teintées -->
+        <div class="premium-card rounded-2xl overflow-hidden flex flex-col">
+          <div class="h-64 overflow-hidden relative">
+            <img src="assets/tinted.png" alt="Vitres teintées CARSTYLE"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy"
+              decoding="async">
+            <div
+              class="absolute top-4 left-4 bg-brandRed text-white font-black text-xs px-3 py-1 rounded uppercase tracking-wider">
+              Nano-Céramique</div>
+          </div>
+          <div class="p-8 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-2xl font-bold mb-4 text-white">Vitres Teintées</h3>
+              <p class="text-metallicGray text-sm leading-relaxed mb-6">
+                Films solaires de technologie nano-céramique offrant une excellente réduction de chaleur et une
+                protection UV supérieure.
+              </p>
+            </div>
+            <a href="services.html#teinte"
+              class="inline-flex items-center gap-2 text-white hover:text-brandRed font-bold uppercase tracking-widest text-xs transition-colors">
+              En savoir plus <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- PPF -->
+        <div class="premium-card rounded-2xl overflow-hidden flex flex-col">
+          <div class="h-64 overflow-hidden relative">
+            <img src="assets/ppf.png" alt="Film PPF CARSTYLE"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy"
+              decoding="async">
+            <div
+              class="absolute top-4 left-4 bg-brandRed text-white font-black text-xs px-3 py-1 rounded uppercase tracking-wider">
+              Protection Invisible</div>
+          </div>
+          <div class="p-8 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-2xl font-bold mb-4 text-white">Protection PPF</h3>
+              <p class="text-metallicGray text-sm leading-relaxed mb-6">
+                Le bouclier ultime invisible contre les rayures, éclats de pierre et agressions routières pour préserver
+                la peinture d'origine.
+              </p>
+            </div>
+            <a href="services.html#ppf"
+              class="inline-flex items-center gap-2 text-white hover:text-brandRed font-bold uppercase tracking-widest text-xs transition-colors">
+              En savoir plus <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Covering -->
+        <div class="premium-card rounded-2xl overflow-hidden flex flex-col">
+          <div class="h-64 overflow-hidden relative">
+            <img src="assets/covering.png" alt="Covering automobile CARSTYLE"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy"
+              decoding="async">
+            <div
+              class="absolute top-4 left-4 bg-brandRed text-white font-black text-xs px-3 py-1 rounded uppercase tracking-wider">
+              Personnalisation</div>
+          </div>
+          <div class="p-8 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-2xl font-bold mb-4 text-white">Covering Automobile</h3>
+              <p class="text-metallicGray text-sm leading-relaxed mb-6">
+                Métamorphosez l'apparence de votre voiture avec notre sélection de coverings : finitions mates,
+                satinées, brillantes ou carbone.
+              </p>
+            </div>
+            <a href="services.html#covering"
+              class="inline-flex items-center gap-2 text-white hover:text-brandRed font-bold uppercase tracking-widest text-xs transition-colors">
+              En savoir plus <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Realisations Slider Section Teaser -->
+  <section class="py-24 bg-anthracite/20 relative border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <div class="max-w-3xl mx-auto mb-16 section-heading">
+        <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">RÉALISATIONS
+          D'EXCEPTION</span>
+        <h2 class="text-3xl md:text-5xl font-extrabold uppercase text-white mb-6">Avant / Après CARSTYLE</h2>
+        <p class="text-metallicGray text-sm md:text-base">
+          Découvrez la différence avec notre comparateur interactif de personnalisation et de pose de films de
+          protection.
+        </p>
+      </div>
+
+      <!-- Visual Before/After Container -->
+      <div class="max-w-4xl mx-auto mb-12">
+        <div class="comparison-slider aspect-video">
+          <!-- After (Background) -->
+          <div class="image-after">
+            <img src="assets/covering.png" alt="Après Covering Premium CARSTYLE" loading="lazy" decoding="async">
+          </div>
+          <!-- Before (Clipped overlay) -->
+          <div class="image-before">
+            <img src="assets/hero.png" alt="Avant Protection CARSTYLE" loading="lazy" decoding="async">
+          </div>
+          <!-- Control handle -->
+          <div class="slider-handle">
+            <div class="slider-handle-button">
+              <i class="fa-solid fa-arrows-left-right text-xs"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <a href="realisations.html"
+        class="btn-premium inline-block px-8 py-4 rounded-full bg-brandRed text-white text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed">
+        Découvrir notre galerie complète
+      </a>
+    </div>
+  </section>
+
+  <!-- Instagram Feed Section -->
+  <section class="py-24 bg-anthracite/10 border-t border-white/5 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16 section-heading">
+        <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3"><i
+            class="fab fa-instagram mr-2"></i>REJOIGNEZ LA COMMUNAUTÉ</span>
+        <h2 class="text-3xl md:text-5xl font-extrabold uppercase text-white mb-4">Notre Flux Instagram</h2>
+        <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+          class="text-brandRed hover:text-white transition-colors text-sm font-semibold tracking-wider">@carstyle_tunisia</a>
+      </div>
+
+      <!-- Instagram Mock Feed Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12">
+        <!-- Post 1 -->
+        <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+          class="premium-card rounded-2xl overflow-hidden group block relative">
+          <div class="aspect-square overflow-hidden relative">
+            <img src="assets/covering.png" alt="Instagram Post covering"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy"
+              decoding="async">
+            <!-- Hover overlay -->
+            <div
+              class="absolute inset-0 bg-deepNoir/70 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-6 transition-all duration-300">
+              <span class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-heart text-brandRed"></i>
+                142</span>
+              <span class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-comment"></i> 18</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Post 2 -->
+        <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+          class="premium-card rounded-2xl overflow-hidden group block relative">
+          <div class="aspect-square overflow-hidden relative">
+            <img src="assets/ppf.png" alt="Instagram Post PPF"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy"
+              decoding="async">
+            <div
+              class="absolute inset-0 bg-deepNoir/70 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-6 transition-all duration-300">
+              <span class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-heart text-brandRed"></i>
+                256</span>
+              <span class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-comment"></i> 29</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Post 3 -->
+        <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+          class="premium-card rounded-2xl overflow-hidden group block relative">
+          <div class="aspect-square overflow-hidden relative">
+            <img src="assets/tinted.png" alt="Instagram Post tinted"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy"
+              decoding="async">
+            <div
+              class="absolute inset-0 bg-deepNoir/70 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-6 transition-all duration-300">
+              <span class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-heart text-brandRed"></i>
+                189</span>
+              <span class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-comment"></i> 15</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Post 4 -->
+        <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+          class="premium-card rounded-2xl overflow-hidden group block relative">
+          <div class="aspect-square overflow-hidden relative">
+            <img src="assets/hero.png" alt="Instagram Post hero"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy"
+              decoding="async">
+            <div
+              class="absolute inset-0 bg-deepNoir/70 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-6 transition-all duration-300">
+              <span class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-heart text-brandRed"></i>
+                321</span>
+              <span class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-comment"></i> 42</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="text-center">
+        <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+          class="btn-premium inline-flex items-center gap-3 px-8 py-4 rounded-full bg-brandRed text-pureWhite text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed">
+          <i class="fab fa-instagram text-base"></i> Nous suivre sur Instagram
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Avis Clients Section -->
+  <section class="py-24 bg-deepNoir border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16 section-heading">
+        <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">LA SATISFACTION AU CŒUR DE
+          NOTRE MÉTIER</span>
+        <h2 class="text-3xl md:text-5xl font-extrabold uppercase text-white">Ce Que Disent Nos Clients</h2>
+      </div>
+
+      <!-- Swiper Slider Container -->
+      <div class="swiper testimonials-swiper pb-12">
+        <div class="swiper-wrapper">
+          <!-- Avis 1 -->
+          <div class="swiper-slide premium-card p-8 rounded-2xl flex flex-col justify-between">
+            <div>
+              <div class="flex text-brandRed gap-1 mb-4">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                  class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              </div>
+              <p class="text-metallicGray text-sm italic mb-6">
+                "La pose du PPF sur ma nouvelle BMW est tout simplement invisible. Une finition impeccable, des détails
+                soignés au millimètre. Je recommande vivement pour les passionnés d'automobile."
+              </p>
+            </div>
+            <div>
+              <h4 class="font-bold text-white text-base">Daoud Khalil.</h4>
+              <span class="text-brandRed text-xs font-semibold">Tunis</span>
+            </div>
+          </div>
+          <!-- Avis 2 -->
+          <div class="swiper-slide premium-card p-8 rounded-2xl flex flex-col justify-between">
+            <div>
+              <div class="flex text-brandRed gap-1 mb-4">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                  class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              </div>
+              <p class="text-metallicGray text-sm italic mb-6">
+                "Excellent service pour les vitres teintées de ma Tesla. Réduction immédiate de la chaleur, esthétique
+                top. L'accueil au Bardo est super chaleureux."
+              </p>
+            </div>
+            <div>
+              <h4 class="font-bold text-white text-base">Rania M.</h4>
+              <span class="text-brandRed text-xs font-semibold">Le Bardo</span>
+            </div>
+          </div>
+          <!-- Avis 3 -->
+          <div class="swiper-slide premium-card p-8 rounded-2xl flex flex-col justify-between">
+            <div>
+              <div class="flex text-brandRed gap-1 mb-4">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                  class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              </div>
+              <p class="text-metallicGray text-sm italic mb-6">
+                "J'ai fait un covering complet noir mat sur ma Porsche Cayenne. Les gens s'arrêtent pour la regarder. Un
+                travail d'artiste haut de gamme."
+              </p>
+            </div>
+            <div>
+              <h4 class="font-bold text-white text-base">Firas T.</h4>
+              <span class="text-brandRed text-xs font-semibold">Carthage</span>
+            </div>
+          </div>
+        </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination mt-8"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-anthracite pt-20 pb-10 border-t border-white/5 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+      <!-- Info Brand -->
+      <div class="md:col-span-2">
+        <a href="index.html" class="inline-block text-2xl font-black tracking-wider text-white mb-6">CAR<span
+            class="text-brandRed">STYLE</span></a>
+        <p class="text-metallicGray text-sm max-w-sm mb-6 leading-relaxed">
+          Atelier tunisien spécialisé dans la personnalisation esthétique et la protection de véhicules haut de gamme.
+          Le savoir-faire, la précision et la passion.
+        </p>
+        <div class="flex gap-4">
+          <a href="https://www.facebook.com/profile.php?id=100082205727145" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Navigation</h4>
+        <ul class="flex flex-col gap-3 text-sm text-metallicGray">
+          <li><a href="index.html" class="hover:text-brandRed transition-colors">Accueil</a></li>
+          <li><a href="services.html" class="hover:text-brandRed transition-colors">Nos Services</a></li>
+          <li><a href="realisations.html" class="hover:text-brandRed transition-colors">Réalisations</a></li>
+          <li><a href="about.html" class="hover:text-brandRed transition-colors">À Propos</a></li>
+          <li><a href="contact.html" class="hover:text-brandRed transition-colors">Contact</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact details -->
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Atelier</h4>
+        <ul class="flex flex-col gap-4 text-sm text-metallicGray">
+          <li class="flex items-start gap-3">
+            <i class="fa-solid fa-location-dot mt-1 text-brandRed"></i>
+            <span>Avenue Bayrem Ettounsi,<br>Le Bardo 2000, Tunisie</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <i class="fa-solid fa-phone text-brandRed"></i>
+            <a href="tel:+21653933751" class="hover:text-brandRed transition-colors">+216 53 933 751</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="max-w-7xl mx-auto px-6 border-t border-white/5 pt-8 text-center text-xs text-metallicGray/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>&copy; 2026 CARSTYLE Accessoires Auto. Tous droits réservés.</p>
+      <p>Conçu pour les passionnés d'automobile.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts — defer for non-blocking load -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+  <script src="main.js" defer></script>
+</body>
+
+</html>
