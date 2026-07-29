@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (entry.isIntersecting) {
           new Swiper(".testimonials-swiper", {
             slidesPerView: 1,
-            spaceBetween: 30,
+            spaceBetween: 32,
             loop: true,
             // Use CSS transforms only (default in Swiper) for GPU compositing
             cssMode: false,
@@ -192,51 +192,40 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    // fromTo (not from) everywhere: `from` reads the element's current value as
+    // the destination, so a ScrollTrigger refresh mid-animation can pin an
+    // element to its offset start state forever.
+    const reveal = (targets, distance, duration, ease, stagger) => gsap.fromTo(targets,
+      { y: distance, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration,
+        ease,
+        stagger,
+        force3D: true, // force GPU layer
+        overwrite: "auto",
+        clearProps: "transform,opacity", // leave no inline transform behind
+      });
+
     // Header fade-in — only transform + opacity (GPU composited)
-    gsap.from("header", {
-      y: -20,
-      opacity: 0,
-      duration: 0.8,
-      ease: "power2.out",
-      force3D: true, // force GPU layer
-    });
+    reveal("header", -20, 0.8, "power2.out", 0);
 
     // Hero content — staggered, GPU-accelerated
-    gsap.from(".hero-content > *", {
-      y: 40,
-      opacity: 0,
-      duration: 1,
-      stagger: 0.15, // slightly tighter stagger
-      ease: "power3.out",
-      force3D: true,
-    });
+    reveal(".hero-content > *", 40, 1, "power3.out", 0.15);
 
     // Animate premium cards — use ScrollTrigger.batch() = 1 single observer
     // instead of N individual observers (much cheaper on scroll)
     ScrollTrigger.batch(".premium-card", {
       start: "top 88%",
-      onEnter: batch => gsap.from(batch, {
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.08,
-        ease: "power3.out",
-        force3D: true,
-      }),
+      onEnter: batch => reveal(batch, 40, 0.8, "power3.out", 0.08),
       once: true, // play only once, then kill the trigger
     });
 
     // Animate section headings — batched
     ScrollTrigger.batch(".section-heading", {
       start: "top 88%",
-      onEnter: batch => gsap.from(batch, {
-        y: 25,
-        opacity: 0,
-        duration: 0.7,
-        stagger: 0.05,
-        ease: "power2.out",
-        force3D: true,
-      }),
+      onEnter: batch => reveal(batch, 25, 0.7, "power2.out", 0.05),
       once: true,
     });
   }

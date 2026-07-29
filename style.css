@@ -383,6 +383,23 @@ header {
   contain: layout style;
 }
 
+/* Testimonials: Swiper's own `.swiper-slide { height: 100% }` collapses each
+   slide onto its own content, which staggers the cards, and `.swiper { padding: 0 }`
+   drops the room reserved for the pagination. Two-class selectors are needed to
+   win over swiper-bundle.min.css, loaded after this file. */
+.swiper.testimonials-swiper {
+  padding-bottom: 3rem;
+}
+
+.testimonials-swiper .swiper-wrapper {
+  align-items: stretch;
+}
+
+.testimonials-swiper .swiper-slide {
+  display: flex;
+  height: auto;
+}
+
 .premium-card .overflow-hidden img {
   transition: transform 0.5s ease;
 }
