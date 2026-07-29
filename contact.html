@@ -9,28 +9,13 @@
     content="Prenez contact avec CARSTYLE Le Bardo ou demandez un devis gratuit. Téléphone, plan Google Maps, WhatsApp et formulaire en ligne.">
 
   <!-- Resource Hints -->
-  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            deepNoir: 'var(--bg-deep)',
-            anthracite: 'var(--bg-card)',
-            brandRed: '#D90429',
-            metallicGray: 'var(--text-gray)',
-            white: 'var(--text-white)',
-            pureWhite: '#FFFFFF',
-          }
-        }
-      }
-    }
-  </script>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/tailwind.css">
   <link rel="stylesheet" href="style.css">
   <script>
     (function () {
@@ -56,7 +41,7 @@
   <header class="fixed top-0 left-0 w-full z-50 bg-deepNoir/80 backdrop-blur-md border-b border-white/5">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3">
-        <img src="assets/logo.png" alt="CARSTYLE Logo"
+        <img src="assets/logo.webp" alt="CARSTYLE Logo"
           class="h-10 w-10 object-contain rounded-full border border-white/10">
         <span class="text-2xl font-black tracking-wider text-pureWhite">CAR<span
             class="text-brandRed">STYLE</span></span>
@@ -72,10 +57,10 @@
 
       <!-- Theme Switcher & CTA -->
       <div class="hidden md:flex items-center gap-4">
-        <button id="theme-toggle"
+        <button data-theme-toggle
           class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
           aria-label="Toggle Theme">
-          <i id="theme-icon" class="fa-solid fa-moon"></i>
+          <i data-theme-icon class="fa-solid fa-moon"></i>
         </button>
         <a href="contact.html#devis"
           class="btn-premium px-6 py-2.5 rounded-full bg-brandRed text-pureWhite text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed">
@@ -85,10 +70,10 @@
 
       <!-- Mobile Controls -->
       <div class="flex items-center gap-4 md:hidden">
-        <button id="theme-toggle"
+        <button data-theme-toggle
           class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
           aria-label="Toggle Theme">
-          <i id="theme-icon" class="fa-solid fa-moon"></i>
+          <i data-theme-icon class="fa-solid fa-moon"></i>
         </button>
         <button id="mobile-menu-btn" class="text-white text-2xl focus:outline-none" aria-label="Ouvrir le menu">
           <i class="fa-solid fa-bars"></i>

@@ -1,31 +1,67 @@
 // CARSTYLE Premium JS Logic — Performance Optimized
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ─── Theme Toggle (Light / Dark Mode) ───────────────────────────────────────
-  const themeToggleBtn = document.getElementById("theme-toggle");
-  const themeIcon = document.getElementById("theme-icon");
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "light") {
+  // ─── Theme Toggle (Light / Dark Mode) ───────────────────────────────────────
+  const themeToggleBtns = document.querySelectorAll("[data-theme-toggle]");
+  const themeIcons = document.querySelectorAll("[data-theme-icon]");
+
+  const paintThemeIcons = (isLight) => {
+    themeIcons.forEach(icon => {
+      icon.classList.toggle("fa-sun", isLight);
+      icon.classList.toggle("fa-moon", !isLight);
+    });
+  };
+
+  if (localStorage.getItem("theme") === "light") {
     document.documentElement.classList.add("light-theme");
-    if (themeIcon) {
-      themeIcon.classList.replace("fa-moon", "fa-sun");
-    }
+    paintThemeIcons(true);
   }
 
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener("click", () => {
+  themeToggleBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
       const willBeLight = !document.documentElement.classList.contains("light-theme");
       document.documentElement.classList.toggle("light-theme", willBeLight);
       localStorage.setItem("theme", willBeLight ? "light" : "dark");
-      if (themeIcon) {
-        if (willBeLight) {
-          themeIcon.classList.replace("fa-moon", "fa-sun");
-        } else {
-          themeIcon.classList.replace("fa-sun", "fa-moon");
-        }
-      }
+      paintThemeIcons(willBeLight);
     }, { passive: true });
+  });
+
+  // ─── Hero video — poster first, stream only when it can be seen ─────────────
+  const heroVideo = document.getElementById("hero-video");
+  if (heroVideo && heroVideo.dataset.src) {
+    const saveData = navigator.connection && navigator.connection.saveData;
+    const slowLink = navigator.connection && /^([23]g|slow-2g)$/.test(navigator.connection.effectiveType || "");
+
+    if (!prefersReducedMotion && !saveData && !slowLink) {
+      const playHero = () => {
+        heroVideo.src = heroVideo.dataset.src;
+        heroVideo.play().catch(() => {});
+      };
+      const heroObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          heroObserver.disconnect();
+          if ("requestIdleCallback" in window) {
+            requestIdleCallback(playHero, { timeout: 2000 });
+          } else {
+            playHero();
+          }
+        });
+      });
+      heroObserver.observe(heroVideo);
+
+      // Stop decoding frames nobody is watching
+      document.addEventListener("visibilitychange", () => {
+        if (!heroVideo.src) return;
+        if (document.hidden) {
+          heroVideo.pause();
+        } else {
+          heroVideo.play().catch(() => {});
+        }
+      });
+    }
   }
 
   // ─── Mobile Navigation Menu Toggle ──────────────────────────────────────────
@@ -47,7 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!handle || !beforeImgContainer) return;
 
-      let isDragging = false;
       let rafId = null;
       let lastClientX = 0;
 
@@ -69,29 +104,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       };
 
-      const onStart = () => { isDragging = true; };
-
       const onMove = (e) => {
-        if (!isDragging) return;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        scheduleUpdate(clientX);
+        scheduleUpdate(e.touches ? e.touches[0].clientX : e.clientX);
       };
 
+      // Move listeners only exist while a drag is in progress, so an idle page
+      // never pays for mousemove/touchmove handlers.
       const onEnd = () => {
-        isDragging = false;
+        slider.classList.remove("is-dragging");
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("touchmove", onMove);
         if (rafId !== null) {
           cancelAnimationFrame(rafId);
           rafId = null;
         }
       };
 
-      // Use { capture: false } + passive where possible
-      handle.addEventListener("mousedown", onStart, { passive: true });
-      window.addEventListener("mousemove", onMove, { passive: true });
-      window.addEventListener("mouseup", onEnd, { passive: true });
+      const onStart = () => {
+        slider.classList.add("is-dragging");
+        window.addEventListener("mousemove", onMove, { passive: true });
+        window.addEventListener("touchmove", onMove, { passive: true });
+      };
 
+      handle.addEventListener("mousedown", onStart, { passive: true });
       handle.addEventListener("touchstart", onStart, { passive: true });
-      window.addEventListener("touchmove", onMove, { passive: true });
+      window.addEventListener("mouseup", onEnd, { passive: true });
       window.addEventListener("touchend", onEnd, { passive: true });
     });
   };
@@ -143,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ─── GSAP ScrollTrigger — batched animations for performance ─────────────────
-  if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
+  if (!prefersReducedMotion && typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
 
     // Disable GSAP ticker when tab is inactive
