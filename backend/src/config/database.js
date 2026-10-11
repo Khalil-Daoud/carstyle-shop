@@ -17,7 +17,7 @@ const sequelize = new Sequelize(
     },
     dialectOptions: {
       connectTimeout: 30000,
-      ...(process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production'
+      ...(process.env.DB_SSL === 'true'
         ? { ssl: { require: true, rejectUnauthorized: false } }
         : {})
     },
