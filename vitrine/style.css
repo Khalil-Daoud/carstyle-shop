@@ -1,0 +1,405 @@
+﻿/* Custom Premium Design System for CARSTYLE */
+/* Google Fonts are loaded from <head> so they don't chain behind this file. */
+
+/* Respect user's motion preferences globally */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:root {
+  --bg-deep: #080808;
+  --bg-card: #121212;
+  --bg-card-hover: #181818;
+  --accent-red: #D90429;
+  --accent-red-glow: rgba(217, 4, 41, 0.4);
+  --text-white: #FFFFFF;
+  --text-gray: #B8B8B8;
+  --text-dark: #666666;
+  --border-glow: rgba(255, 255, 255, 0.05);
+  --border-glow-hover: rgba(217, 4, 41, 0.2);
+}
+
+body.light-theme,
+html.light-theme body {
+  --bg-deep: #F5F5F7;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #EAEAEA;
+  --text-white: #080808;
+  --text-gray: #4A4A4A;
+  --text-dark: #8E8E93;
+  --border-glow: rgba(0, 0, 0, 0.08);
+  --border-glow-hover: rgba(217, 4, 41, 0.3);
+}
+
+/* ==================================================================
+   LIGHT THEME — Tailwind utility overrides
+   Tailwind's CDN resolves utility classes (text-white, bg-deepNoir,
+   border-white/5...) to hard-coded colors. We re-map them here so the
+   site stays readable when the user toggles to light mode.
+   The brand red (#D90429) is preserved as the signature color.
+   ================================================================== */
+body.light-theme .text-white,
+body.light-theme .text-pureWhite {
+  color: #0a0a0a !important;
+}
+body.light-theme .text-metallicGray {
+  color: #4A4A4A !important;
+}
+
+/* Dark backgrounds become light */
+body.light-theme .bg-deepNoir,
+body.light-theme .bg-deepNoir\/80,
+body.light-theme .bg-deepNoir\/70,
+body.light-theme .bg-deepNoir\/60,
+body.light-theme .bg-deepNoir\/50,
+body.light-theme .bg-deepNoir\/40,
+body.light-theme .bg-deepNoir\/30,
+body.light-theme .bg-deepNoir\/20,
+body.light-theme .bg-deepNoir\/10 {
+  background-color: #F5F5F7 !important;
+}
+body.light-theme .bg-anthracite,
+body.light-theme .bg-anthracite\/30,
+body.light-theme .bg-anthracite\/20,
+body.light-theme .bg-anthracite\/10,
+body.light-theme .bg-anthracite\/5 {
+  background-color: #FFFFFF !important;
+}
+
+/* Translucent white backgrounds -> translucent dark in light mode */
+body.light-theme .bg-white\/5  { background-color: rgba(0, 0, 0, 0.04) !important; }
+body.light-theme .bg-white\/10 { background-color: rgba(0, 0, 0, 0.06) !important; }
+body.light-theme .bg-white\/20 { background-color: rgba(0, 0, 0, 0.10) !important; }
+body.light-theme .bg-white\/70 { background-color: rgba(255, 255, 255, 0.85) !important; }
+
+/* Borders: translucent white -> translucent dark */
+body.light-theme .border-white,
+body.light-theme .border-white\/5,
+body.light-theme .border-white\/6,
+body.light-theme .border-white\/10,
+body.light-theme .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.10) !important;
+}
+body.light-theme .border-b.border-white\/5,
+body.light-theme .border-t.border-white\/5,
+body.light-theme .border.border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Hero / comparison gradients (from-anthracite, to-deepNoir) */
+body.light-theme .from-anthracite {
+  --tw-gradient-from: #FFFFFF var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(255, 255, 255, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+body.light-theme .to-deepNoir {
+  --tw-gradient-to: #F5F5F7 var(--tw-gradient-to-position) !important;
+}
+
+/* Subtle text inversion for inputs */
+body.light-theme input,
+body.light-theme textarea,
+body.light-theme select {
+  color: #0a0a0a;
+  background-color: #FFFFFF;
+}
+
+/* Premium card softer shadow in light mode */
+body.light-theme .premium-card {
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* Secondary hero button visible in light */
+body.light-theme .hero-btn-secondary {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #0a0a0a !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* WhatsApp button stays green */
+body.light-theme .whatsapp-float {
+  background-color: #25D366 !important;
+  color: #fff !important;
+}
+
+/* Theme toggle button visible in light */
+body.light-theme [data-theme-toggle] {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #0a0a0a !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Subtle gray text in light */
+body.light-theme .text-metallicGray\/60,
+body.light-theme .text-metallicGray\/65,
+body.light-theme .text-metallicGray\/70,
+body.light-theme .text-metallicGray\/80 {
+  color: #6A6A6A !important;
+}
+
+/* Header backdrop (bg-deepNoir/80) on the hero */
+body.light-theme header.bg-deepNoir\/80,
+body.light-theme .bg-deepNoir\/80 {
+  background-color: rgba(245, 245, 247, 0.85) !important;
+}
+
+/* Comparison slider handle */
+body.light-theme .slider-handle-button { color: #FFFFFF; }
+
+/* Trust indicator divider */
+body.light-theme .trust-divider { background: rgba(0, 0, 0, 0.1); }
+
+/* Brand red CTA: keep red bg, force WHITE text (override) */
+body.light-theme .bg-brandRed,
+body.light-theme .hover\:bg-red-700:hover,
+body.light-theme .btn-premium.bg-brandRed,
+body.light-theme .hero-btn-primary,
+body.light-theme .hero-cta-red {
+  color: #FFFFFF !important;
+}
+
+/* Logo "STYLE" portion stays red in both themes (brand identity) */
+body.light-theme .text-brandRed { color: #D90429 !important; }
+
+/* Hover state for social icons in light mode */
+body.light-theme .text-metallicGray:hover { color: #D90429 !important; }
+
+/* Footer & section dividers (border-t / border-b border-white/5) handled above */
+
+/* ============================================================ */
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-white);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-card);
+  border-radius: 4px;
+  border: 2px solid var(--bg-deep);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-red);
+}
+
+/* Glassmorphism Card Effect */
+.premium-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  contain: layout style;
+}
+
+.premium-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-glow-hover);
+  box-shadow: 0 12px 40px 0 rgba(217, 4, 41, 0.08);
+  transform: translateY(-5px);
+}
+
+/* Glowing text & buttons */
+.text-glow-red {
+  text-shadow: 0 0 10px var(--accent-red-glow);
+}
+
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-premium::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 30%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0.1) 70%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg) translateX(-100%);
+  transition: none;
+}
+
+.btn-premium:hover::after {
+  transform: skewX(-25deg) translateX(100%);
+  transition: all 0.8s ease-in-out;
+}
+
+/* Before / After Slider Styles */
+.comparison-slider {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border-glow);
+}
+
+.comparison-slider img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.image-after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.image-before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+}
+
+.slider-handle {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4px;
+  height: 100%;
+  background-color: var(--accent-red);
+  cursor: ew-resize;
+  transform: translateX(-50%);
+  z-index: 10;
+  box-shadow: 0 0 10px var(--accent-red-glow);
+}
+
+.slider-handle-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background-color: var(--accent-red);
+  color: var(--text-white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px var(--accent-red-glow);
+  font-weight: bold;
+  pointer-events: none;
+}
+
+/* WhatsApp Float Button */
+.whatsapp-float {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: #25D366;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.whatsapp-float:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(37, 211, 102, 0.4);
+}
+
+/* Badge style */
+.badge-red {
+  background-color: rgba(217, 4, 41, 0.1);
+  color: var(--accent-red);
+  border: 1px solid rgba(217, 4, 41, 0.3);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* =============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================= */
+
+header {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* will-change is only promised while an animation is actually about to run:
+   a permanent promise keeps a compositor layer alive for every card/image. */
+.premium-card:hover,
+.premium-card:hover img,
+.whatsapp-float:hover,
+.btn-premium:hover {
+  will-change: transform;
+}
+
+.comparison-slider.is-dragging .slider-handle,
+.comparison-slider.is-dragging .image-before {
+  will-change: left, clip-path;
+}
+
+.swiper-slide {
+  contain: layout style;
+}
+
+/* Testimonials: Swiper's own `.swiper-slide { height: 100% }` collapses each
+   slide onto its own content, which staggers the cards, and `.swiper { padding: 0 }`
+   drops the room reserved for the pagination. Two-class selectors are needed to
+   win over swiper-bundle.min.css, loaded after this file. */
+.swiper.testimonials-swiper {
+  padding-bottom: 3rem;
+}
+
+.testimonials-swiper .swiper-wrapper {
+  align-items: stretch;
+}
+
+.testimonials-swiper .swiper-slide {
+  display: flex;
+  height: auto;
+}
+
+.premium-card .overflow-hidden img {
+  transition: transform 0.5s ease;
+}

@@ -1,0 +1,55 @@
+name: carstyle
+
+services:
+  db:
+    image: postgres:15
+    container_name: carstyle_db
+    restart: always
+    environment:
+      POSTGRES_USER: carstyle_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: carstyle_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ../backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=carstyle_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=carstyle_db
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:4200}
+      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-http://localhost:4200}
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+    depends_on:
+      - db
+
+  frontend:
+    build: ../frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  db_data:

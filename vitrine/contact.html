@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact & Devis | CARSTYLE Tunis</title>
+  <meta name="description"
+    content="Prenez contact avec CARSTYLE Le Bardo ou demandez un devis gratuit. Téléphone, plan Google Maps, WhatsApp et formulaire en ligne.">
+
+  <!-- Resource Hints -->
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/tailwind.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('theme') === 'light') {
+          document.documentElement.classList.add('light-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+</head>
+
+<body class="bg-deepNoir text-white min-h-screen flex flex-col">
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/21653933751" target="_blank" rel="noopener noreferrer"
+    class="whatsapp-float flex items-center justify-center" aria-label="Discutez sur WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- Navigation Header -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-deepNoir/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/logo.webp" alt="CARSTYLE Logo"
+          class="h-10 w-10 object-contain rounded-full border border-white/10">
+        <span class="text-2xl font-black tracking-wider text-pureWhite">CAR<span
+            class="text-brandRed">STYLE</span></span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 font-medium text-sm uppercase tracking-widest text-metallicGray">
+        <a href="index.html" class="hover:text-brandRed transition-colors">Accueil</a>
+        <a href="services.html" class="hover:text-brandRed transition-colors">Services</a>
+        <a href="realisations.html" class="hover:text-brandRed transition-colors">Réalisations</a>
+        <a href="about.html" class="hover:text-brandRed transition-colors">À propos</a>
+        <a href="contact.html" class="text-white hover:text-brandRed transition-colors">Contact</a>
+      </nav>
+
+      <!-- Theme Switcher & CTA -->
+      <div class="hidden md:flex items-center gap-4">
+        <button data-theme-toggle
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i data-theme-icon class="fa-solid fa-moon"></i>
+        </button>
+        <a href="contact.html#devis"
+          class="btn-premium px-6 py-2.5 rounded-full bg-brandRed text-pureWhite text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed">
+          Demander un devis
+        </a>
+      </div>
+
+      <!-- Mobile Controls -->
+      <div class="flex items-center gap-4 md:hidden">
+        <button data-theme-toggle
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i data-theme-icon class="fa-solid fa-moon"></i>
+        </button>
+        <button id="mobile-menu-btn" class="text-white text-2xl focus:outline-none" aria-label="Ouvrir le menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu"
+      class="hidden md:hidden bg-anthracite border-b border-white/5 px-6 py-4 flex flex-col gap-4 text-center font-medium uppercase tracking-widest text-sm text-metallicGray">
+      <a href="index.html" class="py-2 border-b border-white/5">Accueil</a>
+      <a href="services.html" class="py-2 border-b border-white/5">Services</a>
+      <a href="realisations.html" class="py-2 border-b border-white/5">Réalisations</a>
+      <a href="about.html" class="py-2 border-b border-white/5">À propos</a>
+      <a href="contact.html" class="text-white py-2 border-b border-white/5">Contact</a>
+      <a href="contact.html#devis" class="bg-brandRed text-white py-3 rounded-md font-bold text-xs">Demander un
+        devis</a>
+    </div>
+  </header>
+
+  <!-- Hero Contact -->
+  <section class="py-32 bg-gradient-to-b from-anthracite to-deepNoir text-center border-b border-white/5">
+    <div class="max-w-4xl mx-auto px-6 mt-10 hero-content">
+      <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-4">CONTACT & ACCÈS</span>
+      <h1 class="text-4xl md:text-6xl font-black uppercase text-white mb-6">Contactez CARSTYLE</h1>
+      <p class="text-metallicGray text-base max-w-xl mx-auto font-light">
+        Besoin d'un renseignement, d'un rendez-vous ou d'une estimation ? Contactez notre atelier ou remplissez notre
+        formulaire.
+      </p>
+    </div>
+  </section>
+
+  <!-- Contact & Map Grid -->
+  <section class="py-24 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16">
+    <!-- Info & Map -->
+    <div>
+      <h2 class="text-3xl font-extrabold uppercase mb-8 text-white">Nos Coordonnées</h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+        <!-- Phone -->
+        <div class="premium-card p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <i class="fa-solid fa-phone text-brandRed text-2xl mb-4"></i>
+            <h3 class="text-sm font-bold uppercase text-white mb-1">Téléphone</h3>
+            <p class="text-xs text-metallicGray">Appelez-nous directement</p>
+          </div>
+          <a href="tel:+21653933751" class="text-white font-black hover:text-brandRed transition-colors mt-4 block">+216
+            53 933 751</a>
+        </div>
+
+        <!-- Address -->
+        <div class="premium-card p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <i class="fa-solid fa-location-dot text-brandRed text-2xl mb-4"></i>
+            <h3 class="text-sm font-bold uppercase text-white mb-1">Localisation</h3>
+            <p class="text-xs text-metallicGray">Le Bardo, Tunis</p>
+          </div>
+          <p class="text-white text-xs font-semibold mt-4">Avenue Bayrem Ettounsi, Le Bardo 2000</p>
+        </div>
+
+        <!-- Hours -->
+        <div class="premium-card p-6 rounded-2xl col-span-1 sm:col-span-2">
+          <i class="fa-solid fa-clock text-brandRed text-2xl mb-4"></i>
+          <h3 class="text-sm font-bold uppercase text-white mb-3">Horaires d'Ouverture</h3>
+          <div class="grid grid-cols-2 gap-2 text-xs text-metallicGray">
+            <div>Lundi - Samedi :</div>
+            <div class="text-white font-bold">09:00 - 19:00</div>
+            <div>Dimanche :</div>
+            <div class="text-brandRed font-bold">Fermé</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Social Buttons -->
+      <div class="flex flex-wrap gap-4 mb-12">
+        <a href="tel:+21653933751"
+          class="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white/5 border border-white/10 hover:border-brandRed hover:text-white text-metallicGray transition-all font-bold text-xs uppercase tracking-wider">
+          <i class="fa-solid fa-phone"></i> Appeler
+        </a>
+        <a href="https://wa.me/21653933751" target="_blank"
+          class="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all font-bold text-xs uppercase tracking-wider">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="https://www.instagram.com/carstyle_tunisia" target="_blank"
+          class="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#E1306C]/10 border border-[#E1306C]/30 text-[#E1306C] hover:bg-[#E1306C] hover:text-white transition-all font-bold text-xs uppercase tracking-wider">
+          <i class="fab fa-instagram"></i> Instagram
+        </a>
+        <a href="https://www.facebook.com/profile.php?id=100082205727145" target="_blank"
+          class="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#1877F2]/10 border border-[#1877F2]/30 text-[#1877F2] hover:bg-[#1877F2] hover:text-white transition-all font-bold text-xs uppercase tracking-wider">
+          <i class="fab fa-facebook-f"></i> Facebook
+        </a>
+      </div>
+
+      <!-- Google Maps Embed -->
+      <div class="rounded-3xl overflow-hidden h-72 border border-white/5 shadow-lg">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3194.27092102148!2d10.1348123!3d36.8118247!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12fd3bbf7976e10f%3A0x671de8d2f5a6b5a3!2sAv.%20Bayram%20Tunisi%2C%20Le%20Bardo!5e0!3m2!1sfr!2stn!4v1690000000000!5m2!1sfr!2stn"
+          width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </div>
+
+    <!-- Interactive Quote Form -->
+    <div id="devis" class="premium-card p-8 md:p-10 rounded-3xl self-start">
+      <h2 class="text-3xl font-extrabold uppercase mb-2 text-white">Demande de Devis</h2>
+      <p class="text-xs text-metallicGray mb-8">Estimation personnalisée gratuite sous 24h.</p>
+
+      <form id="quote-form" class="flex flex-col gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Nom -->
+          <div class="flex flex-col gap-2">
+            <label for="name" class="text-xs uppercase tracking-wider text-metallicGray font-semibold">Nom Complet
+              *</label>
+            <input type="text" id="name" required
+              class="bg-deepNoir border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandRed text-white transition-colors">
+          </div>
+          <!-- Telephone -->
+          <div class="flex flex-col gap-2">
+            <label for="phone" class="text-xs uppercase tracking-wider text-metallicGray font-semibold">Téléphone
+              *</label>
+            <input type="tel" id="phone" required
+              class="bg-deepNoir border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandRed text-white transition-colors">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Modele Voiture -->
+          <div class="flex flex-col gap-2">
+            <label for="car" class="text-xs uppercase tracking-wider text-metallicGray font-semibold">Marque & Modèle du
+              véhicule *</label>
+            <input type="text" id="car" required placeholder="ex: Porsche 911 Carrera"
+              class="bg-deepNoir border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandRed text-white transition-colors">
+          </div>
+          <!-- Service -->
+          <div class="flex flex-col gap-2">
+            <label for="service-select" class="text-xs uppercase tracking-wider text-metallicGray font-semibold">Service
+              Souhaité</label>
+            <select id="service-select"
+              class="bg-deepNoir border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandRed text-metallicGray transition-colors">
+              <option value="vitres-teintees">Vitres teintées Nano-Céramique</option>
+              <option value="ppf">Film Protection Carrosserie (PPF)</option>
+              <option value="covering">Covering Automobile</option>
+              <option value="accessoires">Accessoires & Équipements</option>
+              <option value="plaques">Plaques d'Immatriculation Perso</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Message -->
+        <div class="flex flex-col gap-2">
+          <label for="message" class="text-xs uppercase tracking-wider text-metallicGray font-semibold">Détails de votre
+            demande</label>
+          <textarea id="message" rows="4" placeholder="Précisez votre demande..."
+            class="bg-deepNoir border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandRed text-white transition-colors"></textarea>
+        </div>
+
+        <button type="submit"
+          class="btn-premium w-full py-4 rounded-full bg-brandRed text-white text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed shadow-lg shadow-brandRed/20">
+          Envoyer ma demande
+        </button>
+      </form>
+
+      <!-- Success visual status -->
+      <div id="form-success"
+        class="hidden mt-6 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-center text-sm">
+        <i class="fa-solid fa-circle-check mr-2"></i> Votre demande a bien été envoyée ! Nous vous contacterons
+        rapidement.
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-anthracite pt-20 pb-10 border-t border-white/5 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+      <div class="md:col-span-2">
+        <a href="index.html" class="inline-block text-2xl font-black tracking-wider text-white mb-6">CAR<span
+            class="text-brandRed">STYLE</span></a>
+        <p class="text-metallicGray text-sm max-w-sm mb-6 leading-relaxed">
+          Atelier tunisien spécialisé dans la personnalisation esthétique et la protection de véhicules haut de gamme.
+          Le savoir-faire, la précision et la passion.
+        </p>
+        <div class="flex gap-4">
+          <a href="https://www.facebook.com/profile.php?id=100082205727145" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Navigation</h4>
+        <ul class="flex flex-col gap-3 text-sm text-metallicGray">
+          <li><a href="index.html" class="hover:text-brandRed transition-colors">Accueil</a></li>
+          <li><a href="services.html" class="hover:text-brandRed transition-colors">Nos Services</a></li>
+          <li><a href="realisations.html" class="hover:text-brandRed transition-colors">Réalisations</a></li>
+          <li><a href="about.html" class="hover:text-brandRed transition-colors">À Propos</a></li>
+          <li><a href="contact.html" class="hover:text-brandRed transition-colors">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Atelier</h4>
+        <ul class="flex flex-col gap-4 text-sm text-metallicGray">
+          <li class="flex items-start gap-3">
+            <i class="fa-solid fa-location-dot mt-1 text-brandRed"></i>
+            <span>Avenue Bayrem Ettounsi,<br>Le Bardo 2000, Tunisie</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <i class="fa-solid fa-phone text-brandRed"></i>
+            <a href="tel:+21653933751" class="hover:text-brandRed transition-colors">+216 53 933 751</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="max-w-7xl mx-auto px-6 border-t border-white/5 pt-8 text-center text-xs text-metallicGray/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>&copy; 2026 CARSTYLE Accessoires Auto. Tous droits réservés.</p>
+      <p>Conçu pour les passionnés d'automobile.</p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+
+  <!-- Interactive Form Handle Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Preselect service based on URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const serviceParam = urlParams.get('service');
+      const selectEl = document.getElementById("service-select");
+      if (serviceParam && selectEl) {
+        selectEl.value = serviceParam;
+      }
+
+      // Form submission redirection to WhatsApp
+      const form = document.getElementById("quote-form");
+      const successMsg = document.getElementById("form-success");
+      if (form && successMsg) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          const name = document.getElementById("name").value;
+          const phone = document.getElementById("phone").value;
+          const car = document.getElementById("car").value;
+          const serviceSelect = document.getElementById("service-select");
+          const serviceText = serviceSelect.options[serviceSelect.selectedIndex].text;
+          const message = document.getElementById("message").value;
+
+          // Format WhatsApp message
+          const whatsappText = `Bonjour CARSTYLE, je souhaite demander un devis :\n\n` +
+            `*Nom complet :* ${name}\n` +
+            `*Téléphone :* ${phone}\n` +
+            `*Véhicule :* ${car}\n` +
+            `*Prestation :* ${serviceText}\n` +
+            `*Détails :* ${message || 'Aucun détail supplémentaire'}`;
+
+          const encodedMessage = encodeURIComponent(whatsappText);
+          const whatsappUrl = `https://wa.me/21653933751?text=${encodedMessage}`;
+
+          // Redirect to WhatsApp
+          window.open(whatsappUrl, '_blank');
+
+          // Animate and show Success message
+          successMsg.classList.remove("hidden");
+          form.reset();
+
+          setTimeout(() => {
+            successMsg.classList.add("hidden");
+          }, 6000);
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

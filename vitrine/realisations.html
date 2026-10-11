@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nos Réalisations | CARSTYLE Atelier Automobile Tunis</title>
+  <meta name="description"
+    content="Découvrez en images nos projets de protection carrosserie PPF, coverings complets et vitres teintées réalisés dans notre atelier de Tunis.">
+
+  <!-- Resource Hints -->
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/tailwind.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('theme') === 'light') {
+          document.documentElement.classList.add('light-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+</head>
+
+<body class="bg-deepNoir text-white min-h-screen flex flex-col">
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/21653933751" target="_blank" rel="noopener noreferrer"
+    class="whatsapp-float flex items-center justify-center" aria-label="Discutez sur WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- Navigation Header -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-deepNoir/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/logo.webp" alt="CARSTYLE Logo"
+          class="h-10 w-10 object-contain rounded-full border border-white/10"
+          fetchpriority="high" decoding="async">
+        <span class="text-2xl font-black tracking-wider text-pureWhite">CAR<span
+            class="text-brandRed">STYLE</span></span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 font-medium text-sm uppercase tracking-widest text-metallicGray">
+        <a href="index.html" class="hover:text-brandRed transition-colors">Accueil</a>
+        <a href="services.html" class="hover:text-brandRed transition-colors">Services</a>
+        <a href="realisations.html" class="text-white hover:text-brandRed transition-colors">Réalisations</a>
+        <a href="about.html" class="hover:text-brandRed transition-colors">À propos</a>
+        <a href="contact.html" class="hover:text-brandRed transition-colors">Contact</a>
+      </nav>
+
+      <!-- Theme Switcher & CTA -->
+      <div class="hidden md:flex items-center gap-4">
+        <button data-theme-toggle
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i data-theme-icon class="fa-solid fa-moon"></i>
+        </button>
+        <a href="contact.html#devis"
+          class="btn-premium px-6 py-2.5 rounded-full bg-brandRed text-pureWhite text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed">
+          Demander un devis
+        </a>
+      </div>
+
+      <!-- Mobile Controls -->
+      <div class="flex items-center gap-4 md:hidden">
+        <button data-theme-toggle
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i data-theme-icon class="fa-solid fa-moon"></i>
+        </button>
+        <button id="mobile-menu-btn" class="text-white text-2xl focus:outline-none" aria-label="Ouvrir le menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu"
+      class="hidden md:hidden bg-anthracite border-b border-white/5 px-6 py-4 flex flex-col gap-4 text-center font-medium uppercase tracking-widest text-sm text-metallicGray">
+      <a href="index.html" class="py-2 border-b border-white/5">Accueil</a>
+      <a href="services.html" class="py-2 border-b border-white/5">Services</a>
+      <a href="realisations.html" class="text-white py-2 border-b border-white/5">Réalisations</a>
+      <a href="about.html" class="py-2 border-b border-white/5">À propos</a>
+      <a href="contact.html" class="py-2 border-b border-white/5">Contact</a>
+      <a href="contact.html#devis" class="bg-brandRed text-white py-3 rounded-md font-bold text-xs">Demander un
+        devis</a>
+    </div>
+  </header>
+
+  <!-- Hero Réalisations -->
+  <section class="py-32 bg-gradient-to-b from-anthracite to-deepNoir text-center border-b border-white/5">
+    <div class="max-w-5xl mx-auto px-6 mt-10 hero-content">
+      <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-4 font-semibold">NOTRE
+        GALERIE</span>
+      <h1 class="text-4xl md:text-6xl font-black uppercase text-white mb-6">Réalisations d'Exception</h1>
+      <p class="text-metallicGray text-base max-w-xl mx-auto font-light">
+        Parcourez les transformations et protections effectuées dans notre atelier du Bardo. Précision chirurgicale,
+        finitions de prestige.
+      </p>
+    </div>
+  </section>
+
+  <!-- Before / After Comparative Section -->
+  <section class="py-20 bg-deepNoir border-b border-white/5">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">ZOOM INTERACTIF</span>
+      <h2 class="text-2xl md:text-4xl font-extrabold uppercase text-white mb-10">Comparateur Avant / Après</h2>
+
+      <div class="comparison-slider aspect-video shadow-2xl">
+        <div class="image-after">
+          <img src="assets/covering.webp" alt="Après Covering Premium" loading="lazy" decoding="async">
+        </div>
+        <div class="image-before">
+          <img src="assets/hero.webp" alt="Avant Covering Premium" loading="lazy" decoding="async">
+        </div>
+        <div class="slider-handle">
+          <div class="slider-handle-button">
+            <i class="fa-solid fa-arrows-left-right text-xs"></i>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-metallicGray mt-4 italic">Faites glisser la barre rouge pour comparer la transformation.
+      </p>
+    </div>
+  </section>
+
+  <!-- Masonry Portfolio Section -->
+  <section class="py-24 max-w-7xl mx-auto px-6">
+    <div class="flex flex-wrap items-center justify-center gap-4 mb-12" id="gallery-filters">
+      <button
+        class="filter-btn active px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-brandRed bg-brandRed text-white transition-all"
+        data-filter="all">Tous</button>
+      <button
+        class="filter-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-brandRed text-metallicGray hover:text-white transition-all"
+        data-filter="teinte">Vitres Teintées</button>
+      <button
+        class="filter-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-brandRed text-metallicGray hover:text-white transition-all"
+        data-filter="ppf">PPF</button>
+      <button
+        class="filter-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-brandRed text-metallicGray hover:text-white transition-all"
+        data-filter="covering">Covering</button>
+    </div>
+
+    <!-- Gallery Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="gallery-grid">
+      <!-- Item 1: Covering -->
+      <div class="gallery-item premium-card rounded-2xl overflow-hidden group" data-category="covering">
+        <a href="assets/covering.webp" class="glightbox" data-gallery="carstyle-gallery"
+          data-title="Covering Satin Grey Premium" data-description="Covering complet satiné sur voiture de sport.">
+          <div class="relative overflow-hidden h-72">
+            <img src="assets/covering.webp" alt="Covering Satin Grey"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy" decoding="async">
+            <div
+              class="absolute inset-0 bg-deepNoir/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
+              <i class="fa-solid fa-magnifying-glass-plus text-white text-3xl"></i>
+            </div>
+          </div>
+          <div class="p-6">
+            <span class="text-brandRed text-xs font-bold uppercase tracking-widest">Covering</span>
+            <h3 class="text-lg font-bold text-white mt-2">Satin Grey Supercar Wrap</h3>
+          </div>
+        </a>
+      </div>
+
+      <!-- Item 2: PPF -->
+      <div class="gallery-item premium-card rounded-2xl overflow-hidden group" data-category="ppf">
+        <a href="assets/ppf.webp" class="glightbox" data-gallery="carstyle-gallery"
+          data-title="Protection PPF Invisible Gloss"
+          data-description="Pose de film de protection carrosserie PPF ultra-brillant.">
+          <div class="relative overflow-hidden h-72">
+            <img src="assets/ppf.webp" alt="PPF Gloss Invisible"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy" decoding="async">
+            <div
+              class="absolute inset-0 bg-deepNoir/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
+              <i class="fa-solid fa-magnifying-glass-plus text-white text-3xl"></i>
+            </div>
+          </div>
+          <div class="p-6">
+            <span class="text-brandRed text-xs font-bold uppercase tracking-widest">PPF</span>
+            <h3 class="text-lg font-bold text-white mt-2">PPF Ultra Gloss Protection</h3>
+          </div>
+        </a>
+      </div>
+
+      <!-- Item 3: Teinte -->
+      <div class="gallery-item premium-card rounded-2xl overflow-hidden group" data-category="teinte">
+        <a href="assets/tinted.webp" class="glightbox" data-gallery="carstyle-gallery"
+          data-title="Vitres Teintées Nano-Céramique Blackout"
+          data-description="Vitres teintées haute performance nano-céramique.">
+          <div class="relative overflow-hidden h-72">
+            <img src="assets/tinted.webp" alt="Vitres teintées Audi RS6"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy" decoding="async">
+            <div
+              class="absolute inset-0 bg-deepNoir/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
+              <i class="fa-solid fa-magnifying-glass-plus text-white text-3xl"></i>
+            </div>
+          </div>
+          <div class="p-6">
+            <span class="text-brandRed text-xs font-bold uppercase tracking-widest">Vitres Teintées</span>
+            <h3 class="text-lg font-bold text-white mt-2">Audi RS6 Blackout Nano-Ceramic</h3>
+          </div>
+        </a>
+      </div>
+
+      <!-- Item 4: Covering/Hero -->
+      <div class="gallery-item premium-card rounded-2xl overflow-hidden group" data-category="covering">
+        <a href="assets/hero.webp" class="glightbox" data-gallery="carstyle-gallery"
+          data-title="Porsche Custom detailing" data-description="Finitions esthétiques sportives et personnalisation.">
+          <div class="relative overflow-hidden h-72">
+            <img src="assets/hero.webp" alt="Porsche Custom detailing"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy" decoding="async">
+            <div
+              class="absolute inset-0 bg-deepNoir/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
+              <i class="fa-solid fa-magnifying-glass-plus text-white text-3xl"></i>
+            </div>
+          </div>
+          <div class="p-6">
+            <span class="text-brandRed text-xs font-bold uppercase tracking-widest">Covering</span>
+            <h3 class="text-lg font-bold text-white mt-2">Porsche GT3 Details & Polish</h3>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-anthracite pt-20 pb-10 border-t border-white/5 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+      <div class="md:col-span-2">
+        <a href="index.html" class="inline-block text-2xl font-black tracking-wider text-white mb-6">CAR<span
+            class="text-brandRed">STYLE</span></a>
+        <p class="text-metallicGray text-sm max-w-sm mb-6 leading-relaxed">
+          Atelier tunisien spécialisé dans la personnalisation esthétique et la protection de véhicules haut de gamme.
+          Le savoir-faire, la précision et la passion.
+        </p>
+        <div class="flex gap-4">
+          <a href="https://www.facebook.com/profile.php?id=100082205727145" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Navigation</h4>
+        <ul class="flex flex-col gap-3 text-sm text-metallicGray">
+          <li><a href="index.html" class="hover:text-brandRed transition-colors">Accueil</a></li>
+          <li><a href="services.html" class="hover:text-brandRed transition-colors">Nos Services</a></li>
+          <li><a href="realisations.html" class="hover:text-brandRed transition-colors">Réalisations</a></li>
+          <li><a href="about.html" class="hover:text-brandRed transition-colors">À Propos</a></li>
+          <li><a href="contact.html" class="hover:text-brandRed transition-colors">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Atelier</h4>
+        <ul class="flex flex-col gap-4 text-sm text-metallicGray">
+          <li class="flex items-start gap-3">
+            <i class="fa-solid fa-location-dot mt-1 text-brandRed"></i>
+            <span>Avenue Bayrem Ettounsi,<br>Le Bardo 2000, Tunisie</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <i class="fa-solid fa-phone text-brandRed"></i>
+            <a href="tel:+21653933751" class="hover:text-brandRed transition-colors">+216 53 933 751</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="max-w-7xl mx-auto px-6 border-t border-white/5 pt-8 text-center text-xs text-metallicGray/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>&copy; 2026 CARSTYLE Accessoires Auto. Tous droits réservés.</p>
+      <p>Conçu pour les passionnés d'automobile.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+  <script src="main.js" defer></script>
+
+  <!-- Gallery filtering — optimized with opacity/pointer-events instead of display toggle -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const filterButtons = document.querySelectorAll(".filter-btn");
+      const galleryItems = document.querySelectorAll(".gallery-item");
+
+      filterButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          filterButtons.forEach(b => {
+            b.classList.remove("active", "bg-brandRed", "text-white");
+            b.classList.add("border-white/10", "text-metallicGray");
+          });
+
+          btn.classList.add("active", "bg-brandRed", "text-white");
+          btn.classList.remove("border-white/10", "text-metallicGray");
+
+          const filterValue = btn.getAttribute("data-filter");
+
+          galleryItems.forEach(item => {
+            const cat = item.getAttribute("data-category");
+            const visible = filterValue === "all" || cat === filterValue;
+            // Use opacity + pointer-events instead of display to avoid layout reflows
+            item.style.opacity = visible ? "1" : "0";
+            item.style.pointerEvents = visible ? "" : "none";
+            item.style.transform = visible ? "" : "scale(0.95)";
+            item.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+          });
+        }, { passive: true });
+      });
+    });
+  </script>
+</body>
+
+</html>

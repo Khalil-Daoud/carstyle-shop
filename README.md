@@ -1,28 +1,60 @@
-# CARSTYLE
+# CARSTYLE — Boutique accessoires auto
 
-Site vitrine statique (HTML/CSS/JS) de CARSTYLE — Le Bardo, Tunis.
+E-commerce full-stack pour **Carstyle** (Le Bardo, Tunisie) : accessoires intérieur / extérieur, detailing, entretien et électronique auto.
 
-## Développement
+Même principe que la boutique Nelya (catalogue, panier, commandes, admin, WhatsApp), adapté à la vente d’accessoires automobile — dans l’esprit d’un shop type [Tomobile](https://tomobile.store/).
+
+## Stack
+
+- **Frontend** : Angular 17, Angular Material
+- **Backend** : Node.js, Express, Sequelize
+- **Base** : PostgreSQL 15
+- **Auth** : JWT (admin, seller, client)
+- **Paiement** : espèces à la livraison (structure prête pour une passerelle)
+
+## Lancement (Docker)
+
+1. Copier `docker/.env.example` vers `docker/.env` et renseigner `DB_PASSWORD` + `JWT_SECRET`.
+2. À la racine :
 
 ```bash
-npm install          # une seule fois
-npm run watch:css    # recompile assets/tailwind.css à chaque modification
-npm run serve        # http://localhost:8080
+docker compose -f docker/docker-compose.yml up --build
 ```
 
-## ⚠️ Tailwind est compilé, plus chargé depuis le CDN
+3. Accès :
+   - Boutique : `http://localhost:4200`
+   - API : `http://localhost:3000/api`
+   - Health : `http://localhost:3000/health`
 
-Les classes Tailwind sont pré-générées dans `assets/tailwind.css` (fichier versionné).
-**Après toute modification de classes dans un `.html` ou dans `main.js`, il faut relancer :**
+Au premier démarrage (catalogue vide), le seeder crée les catégories et 15 produits démo (prix en TND).
+
+## Développement local
 
 ```bash
-npm run build:css
+cd backend && npm install && npm run dev
+cd frontend && npm install && npm start
 ```
 
-sinon les nouvelles classes n'existeront pas dans la feuille de style.
+Créer un admin :
 
-## Médias
+```bash
+cd backend
+# ADMIN_EMAIL et ADMIN_PASSWORD dans backend/.env
+npm run create-admin
+```
 
-Les photos sont en WebP (`assets/*.webp`) et la vidéo hero est la version 720p
-(`assets/vids/hero-720.mp4`) avec un poster (`hero-poster.webp`) affiché avant lecture.
-Pour ajouter une photo, exporter en WebP (qualité ~78, largeur max 1024 px) plutôt qu'en PNG.
+## Fonctionnalités
+
+- Catalogue, filtres, fiche produit, favoris, panier
+- Commande (compte ou invité selon réglage admin)
+- Suivi public `/commande/:token`
+- Admin : produits, stock, catégories, commandes, utilisateurs, paramètres
+- Import CSV / Excel, WhatsApp, e-mail (si SMTP configuré)
+- Devise par défaut : **TND**
+
+## Identité client
+
+- Marque : **CARSTYLE**
+- Adresse : Avenue Bayrem Ettounsi, Le Bardo 2000
+- Tél / WhatsApp : +216 53 933 751
+- Instagram : [@carstyle_tunisia](https://www.instagram.com/carstyle_tunisia)

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>À Propos | CARSTYLE Accessoires & Detailing Tunis</title>
+  <meta name="description"
+    content="Découvrez l'histoire de CARSTYLE au Bardo, Tunis. Notre passion, notre atelier premium et notre engagement de qualité pour votre véhicule.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/tailwind.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    media="print" onload="this.media='all'">
+</head>
+
+<body class="bg-deepNoir text-white min-h-screen flex flex-col">
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/21653933751" target="_blank" rel="noopener noreferrer"
+    class="whatsapp-float flex items-center justify-center" aria-label="Discutez sur WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- Navigation Header -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-deepNoir/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/logo.webp" alt="CARSTYLE Logo"
+          class="h-10 w-10 object-contain rounded-full border border-white/10">
+        <span class="text-2xl font-black tracking-wider text-pureWhite">CAR<span
+            class="text-brandRed">STYLE</span></span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 font-medium text-sm uppercase tracking-widest text-metallicGray">
+        <a href="index.html" class="hover:text-brandRed transition-colors">Accueil</a>
+        <a href="services.html" class="hover:text-brandRed transition-colors">Services</a>
+        <a href="realisations.html" class="hover:text-brandRed transition-colors">Réalisations</a>
+        <a href="about.html" class="text-white hover:text-brandRed transition-colors">À propos</a>
+        <a href="contact.html" class="hover:text-brandRed transition-colors">Contact</a>
+      </nav>
+
+      <!-- Theme Switcher & CTA -->
+      <div class="hidden md:flex items-center gap-4">
+        <button data-theme-toggle
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i data-theme-icon class="fa-solid fa-moon"></i>
+        </button>
+        <a href="contact.html#devis"
+          class="btn-premium px-6 py-2.5 rounded-full bg-brandRed text-pureWhite text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-all border border-brandRed">
+          Demander un devis
+        </a>
+      </div>
+
+      <!-- Mobile Controls -->
+      <div class="flex items-center gap-4 md:hidden">
+        <button data-theme-toggle
+          class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-colors"
+          aria-label="Toggle Theme">
+          <i data-theme-icon class="fa-solid fa-moon"></i>
+        </button>
+        <button id="mobile-menu-btn" class="text-white text-2xl focus:outline-none" aria-label="Ouvrir le menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu"
+      class="hidden md:hidden bg-anthracite border-b border-white/5 px-6 py-4 flex flex-col gap-4 text-center font-medium uppercase tracking-widest text-sm text-metallicGray">
+      <a href="index.html" class="py-2 border-b border-white/5">Accueil</a>
+      <a href="services.html" class="py-2 border-b border-white/5">Services</a>
+      <a href="realisations.html" class="py-2 border-b border-white/5">Réalisations</a>
+      <a href="about.html" class="text-white py-2 border-b border-white/5">À propos</a>
+      <a href="contact.html" class="py-2 border-b border-white/5">Contact</a>
+      <a href="contact.html#devis" class="bg-brandRed text-white py-3 rounded-md font-bold text-xs">Demander un
+        devis</a>
+    </div>
+  </header>
+
+  <!-- Hero About -->
+  <section class="py-32 bg-gradient-to-b from-anthracite to-deepNoir text-center border-b border-white/5">
+    <div class="max-w-4xl mx-auto px-6 mt-10 hero-content">
+      <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-4">NOTRE HISTOIRE</span>
+      <h1 class="text-4xl md:text-6xl font-black uppercase text-white mb-6">L'Atelier de Passionnés</h1>
+      <p class="text-metallicGray text-base max-w-xl mx-auto font-light">
+        Découvrez notre vision de l'esthétique et de la personnalisation automobile haut de gamme en Tunisie.
+      </p>
+    </div>
+  </section>
+
+  <!-- History & Philosophy -->
+  <section class="py-24 max-w-7xl mx-auto px-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div>
+        <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">QUI SOMMES-NOUS ?</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold uppercase mb-6 text-white">CARSTYLE : Spécialiste Detailing &
+          Protection</h2>
+        <p class="text-metallicGray text-sm md:text-base leading-relaxed mb-6">
+          Né de la passion absolue pour l'automobile d'exception, CARSTYLE s'est imposé comme une référence
+          incontournable de la personnalisation et de la protection esthétique de véhicules au Bardo, Tunis.
+        </p>
+        <p class="text-metallicGray text-sm md:text-base leading-relaxed mb-8">
+          Notre philosophie repose sur le respect des lignes originales de chaque voiture et sur l'application
+          rigoureuse de produits innovants. Chaque véhicule quittant notre atelier bénéficie d'une attention d'orfèvre
+          et d'un contrôle qualité extrêmement strict.
+        </p>
+        <div class="grid grid-cols-3 gap-6 text-center border-t border-white/5 pt-8">
+          <div>
+            <span class="block text-3xl font-extrabold text-brandRed">100%</span>
+            <span class="text-[10px] text-metallicGray uppercase tracking-widest">Matériaux Certifiés</span>
+          </div>
+          <div>
+            <span class="block text-3xl font-extrabold text-brandRed">5+</span>
+            <span class="text-[10px] text-metallicGray uppercase tracking-widest">Prestations phares</span>
+          </div>
+          <div>
+            <span class="block text-3xl font-extrabold text-brandRed">1K+</span>
+            <span class="text-[10px] text-metallicGray uppercase tracking-widest">Clients Heureux</span>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-3xl overflow-hidden h-[450px]">
+        <img src="assets/hero.webp" alt="Atelier haut de gamme CARSTYLE" class="w-full h-full object-cover">
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust Pillars (Values) -->
+  <section class="py-24 bg-anthracite/30 relative border-t border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <span class="text-brandRed text-xs font-bold uppercase tracking-widest block mb-3">NOS PILLIERS</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold uppercase text-white">Nos Valeurs d'Excellence</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- Expertise -->
+        <div class="premium-card p-8 rounded-2xl">
+          <span class="text-brandRed text-2xl font-bold mb-4 block"><i class="fa-solid fa-graduation-cap"></i></span>
+          <h3 class="text-lg font-bold text-white mb-2 uppercase">Expertise</h3>
+          <p class="text-xs text-metallicGray leading-relaxed">
+            Formation technique avancée et maîtrise absolue des techniques de covering complexe et de découpe numérique
+            PPF.
+          </p>
+        </div>
+
+        <!-- Qualité -->
+        <div class="premium-card p-8 rounded-2xl">
+          <span class="text-brandRed text-2xl font-bold mb-4 block"><i class="fa-solid fa-gem"></i></span>
+          <h3 class="text-lg font-bold text-white mb-2 uppercase">Matériaux</h3>
+          <p class="text-xs text-metallicGray leading-relaxed">
+            Sélection stricte de films haut de gamme de renommée mondiale, offrant longévité et finitions d'usine.
+          </p>
+        </div>
+
+        <!-- Précision -->
+        <div class="premium-card p-8 rounded-2xl">
+          <span class="text-brandRed text-2xl font-bold mb-4 block"><i class="fa-solid fa-compass-drafting"></i></span>
+          <h3 class="text-lg font-bold text-white mb-2 uppercase">Précision</h3>
+          <p class="text-xs text-metallicGray leading-relaxed">
+            Un travail soigné jusque dans les moindres détails (coins rentrés, alignements parfaits, absence de bulles).
+          </p>
+        </div>
+
+        <!-- Confiance -->
+        <div class="premium-card p-8 rounded-2xl">
+          <span class="text-brandRed text-2xl font-bold mb-4 block"><i class="fa-solid fa-user-shield"></i></span>
+          <h3 class="text-lg font-bold text-white mb-2 uppercase">Garantie</h3>
+          <p class="text-xs text-metallicGray leading-relaxed">
+            Une totale transparence commerciale et des garanties durables sur nos installations solaires et
+            protectrices.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-anthracite pt-20 pb-10 border-t border-white/5 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+      <div class="md:col-span-2">
+        <a href="index.html" class="inline-block text-2xl font-black tracking-wider text-white mb-6">CAR<span
+            class="text-brandRed">STYLE</span></a>
+        <p class="text-metallicGray text-sm max-w-sm mb-6 leading-relaxed">
+          Atelier tunisien spécialisé dans la personnalisation esthétique et la protection de véhicules haut de gamme.
+          Le savoir-faire, la précision et la passion.
+        </p>
+        <div class="flex gap-4">
+          <a href="https://www.facebook.com/profile.php?id=100082205727145" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener noreferrer"
+            class="w-10 h-10 bg-white/5 hover:bg-brandRed rounded-full flex items-center justify-center hover:text-white transition-all text-metallicGray">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Navigation</h4>
+        <ul class="flex flex-col gap-3 text-sm text-metallicGray">
+          <li><a href="index.html" class="hover:text-brandRed transition-colors">Accueil</a></li>
+          <li><a href="services.html" class="hover:text-brandRed transition-colors">Nos Services</a></li>
+          <li><a href="realisations.html" class="hover:text-brandRed transition-colors">Réalisations</a></li>
+          <li><a href="about.html" class="hover:text-brandRed transition-colors">À Propos</a></li>
+          <li><a href="contact.html" class="hover:text-brandRed transition-colors">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-widest text-sm mb-6">Atelier</h4>
+        <ul class="flex flex-col gap-4 text-sm text-metallicGray">
+          <li class="flex items-start gap-3">
+            <i class="fa-solid fa-location-dot mt-1 text-brandRed"></i>
+            <span>Avenue Bayrem Ettounsi,<br>Le Bardo 2000, Tunisie</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <i class="fa-solid fa-phone text-brandRed"></i>
+            <a href="tel:+21653933751" class="hover:text-brandRed transition-colors">+216 53 933 751</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="max-w-7xl mx-auto px-6 border-t border-white/5 pt-8 text-center text-xs text-metallicGray/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>&copy; 2026 CARSTYLE Accessoires Auto. Tous droits réservés.</p>
+      <p>Conçu pour les passionnés d'automobile.</p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+
+</html>
