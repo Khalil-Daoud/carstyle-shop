@@ -1,4 +1,5 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -8,26 +9,28 @@ import { MatMenuModule } from '@angular/material/menu';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 import { WishlistService } from '../../services/wishlist.service';
-import { CrudService } from '../../services/crud.service';
+import { CatalogService } from '../../services/catalog.service';
+import { BrandService } from '../../services/brand.service';
+import { ImageUrlPipe } from '../../pipes/image-url.pipe';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, MatBadgeModule, MatButtonModule, MatIconModule, MatMenuModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive, MatBadgeModule, MatButtonModule, MatIconModule, MatMenuModule, ImageUrlPipe],
   template: `
     <div class="luxe-chrome">
     <div class="luxe-topbar">
       <div class="luxe-topbar-inner">
-        <span><mat-icon>local_shipping</mat-icon> Livraison 48h en Tunisie</span>
-        <span><mat-icon>payments</mat-icon> Paiement à la livraison</span>
-        <a href="https://wa.me/21653933751" target="_blank" rel="noopener"><mat-icon>chat</mat-icon> WhatsApp 53 933 751</a>
+        <span><mat-icon>local_shipping</mat-icon> {{ brand.copy.topbarShipping }}</span>
+        <span><mat-icon>payments</mat-icon> {{ brand.copy.topbarPayment }}</span>
+        <a [href]="brand.whatsappUrl" target="_blank" rel="noopener"><mat-icon>chat</mat-icon> {{ brand.contact.whatsappLabel }}</a>
       </div>
     </div>
     <nav class="luxe-nav" [class.scrolled]="scrolled">
       <div class="luxe-nav-inner">
         <a class="luxe-logo" routerLink="/">
-          <img src="assets/logo.webp" alt="Carstyle" class="logo-img" width="40" height="40">
-          <span>CAR<span class="logo-accent">STYLE</span></span>
+          <img [src]="brand.logoUrl | imageUrl" [alt]="brand.name" class="logo-img" width="40" height="40">
+          <span>{{ brand.nameStart }}<span class="logo-accent" *ngIf="brand.nameAccent">{{ brand.nameAccent }}</span></span>
         </a>
 
         <div class="luxe-nav-links" [class.open]="mobileOpen">
@@ -40,12 +43,27 @@ import { CrudService } from '../../services/crud.service';
             <button mat-menu-item routerLink="/collection" (click)="mobileOpen = false">
               <mat-icon>grid_view</mat-icon> Tous les produits
             </button>
-            <button mat-menu-item *ngFor="let cat of categories" [routerLink]="['/collection']" [queryParams]="{cat: cat}" (click)="mobileOpen = false">
-              <mat-icon>arrow_forward_ios</mat-icon> {{ cat }}
-            </button>
+            <ng-container *ngFor="let cat of navTree; trackBy: trackByName">
+              <button mat-menu-item *ngIf="!cat.children.length" [routerLink]="['/collection']" [queryParams]="{cat: cat.name}" (click)="mobileOpen = false">
+                <mat-icon>arrow_forward_ios</mat-icon> {{ cat.name }}
+              </button>
+              <button mat-menu-item *ngIf="cat.children.length" [matMenuTriggerFor]="childMenu" [matMenuTriggerData]="{ cat: cat }">
+                <mat-icon>arrow_forward_ios</mat-icon> {{ cat.name }}
+              </button>
+            </ng-container>
+          </mat-menu>
+          <mat-menu #childMenu="matMenu">
+            <ng-template matMenuContent let-cat="cat">
+              <button mat-menu-item [routerLink]="['/collection']" [queryParams]="{cat: cat.name}" (click)="mobileOpen = false">
+                Tout {{ cat.name }}
+              </button>
+              <button mat-menu-item *ngFor="let child of cat.children; trackBy: trackByName" [routerLink]="['/collection']" [queryParams]="{cat: cat.name, sub: child.name}" (click)="mobileOpen = false">
+                {{ child.name }}
+              </button>
+            </ng-template>
           </mat-menu>
 
-          <a routerLink="/collection" *ngIf="categories.length === 0" routerLinkActive="active">BOUTIQUE</a>
+          <a routerLink="/collection" *ngIf="navTree.length === 0" routerLinkActive="active">BOUTIQUE</a>
           <a routerLink="/auth/login" *ngIf="!isLoggedIn" (click)="mobileOpen = false">CONNEXION</a>
 
           <form class="luxe-mobile-search" (submit)="search(searchInput.value); $event.preventDefault()" *ngIf="mobileOpen">
@@ -77,7 +95,7 @@ import { CrudService } from '../../services/crud.service';
           </button>
           <mat-menu #profileMenu="matMenu" xPosition="before">
             <button mat-menu-item routerLink="/profile"><mat-icon>account_circle</mat-icon> Mon Profil</button>
-            <button mat-menu-item routerLink="/admin" *ngIf="isAdmin"><mat-icon>admin_panel_settings</mat-icon> Administration</button>
+            <button mat-menu-item routerLink="/admin" *ngIf="canAccessAdmin"><mat-icon>admin_panel_settings</mat-icon> Administration</button>
             <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon> Déconnexion</button>
           </mat-menu>
 
@@ -229,40 +247,50 @@ export class HeaderComponent implements OnInit {
   cartCount = 0;
   wishlistCount = 0;
   isLoggedIn = false;
-  isAdmin = false;
+  canAccessAdmin = false;
   loyaltyPoints: number | null = null;
-  categories: string[] = [];
+  navTree: { name: string; children: { name: string }[] }[] = [];
   scrolled = false;
   mobileOpen = false;
   searchOpen = false;
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private cartService: CartService,
     private authService: AuthService,
     private wishlistService: WishlistService,
-    private crudService: CrudService,
-    private router: Router
+    private catalog: CatalogService,
+    private router: Router,
+    public brand: BrandService
   ) {}
 
   ngOnInit() {
-    this.cartService.cartItems$.subscribe(items => {
+    this.cartService.cartItems$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(items => {
       this.cartCount = items.reduce((acc, i) => acc + i.quantity, 0);
     });
-    this.wishlistService.ids$.subscribe(ids => { this.wishlistCount = ids.length; });
+    this.wishlistService.ids$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(ids => { this.wishlistCount = ids.length; });
     this.authService.refreshMe();
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(user => {
       this.isLoggedIn = !!user;
-      this.isAdmin = user?.role === 'admin';
+      this.canAccessAdmin = this.authService.canAccessAdmin;
       this.loyaltyPoints = user?.role === 'client' ? Number(user.loyalty_points || 0) : null;
     });
-    this.crudService.getAll<any>('categories').subscribe({
-      next: categories => {
-        this.categories = categories
-          .map(c => c.name)
-          .filter(c => c && c !== 'Promotions');
+    this.catalog.getMeta().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: meta => {
+        this.navTree = (meta.categories || [])
+          .filter((c) => c.name && c.name !== 'Promotions')
+          .map((root) => ({
+            name: root.name,
+            children: (root.children || []).map((child) => ({ name: child.name }))
+          }));
       },
-      error: () => { this.categories = []; }
+      error: () => { this.navTree = []; }
     });
+  }
+
+  trackByName(_index: number, item: { name?: string }) {
+    return item?.name || _index;
   }
 
   @HostListener('window:scroll', [])

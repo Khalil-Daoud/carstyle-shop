@@ -7,12 +7,43 @@ import { RouterLink } from '@angular/router';
 import { CrudService } from '../../services/crud.service';
 import { SettingsService } from '../../services/settings.service';
 import { FormatCurrencyPipe } from '../../pipes/format-currency.pipe';
+import { ImageUrlPipe } from '../../pipes/image-url.pipe';
 import { forkJoin } from 'rxjs';
+import { BrandService } from '../../services/brand.service';
 
 interface Period {
   value: string;
   label: string;
   shortLabel: string;
+}
+
+interface DonutSlice {
+  key: string;
+  label: string;
+  value: number;
+  color: string;
+  dash: number;
+  offset: number;
+  pct: number;
+}
+
+interface TopProduct {
+  id: string;
+  name: string;
+  category: string;
+  image: string;
+  qty: number;
+  revenue: number;
+  profit: number | null;
+  stock: number | null;
+}
+
+interface LowStock {
+  id: string;
+  name: string;
+  category: string;
+  image: string;
+  stock: number;
 }
 
 const PERIODS: Period[] = [
@@ -23,16 +54,27 @@ const PERIODS: Period[] = [
   { value: 'all', label: 'Depuis le début', shortLabel: 'Tout' }
 ];
 
+const STATUS_META: { key: string; label: string; color: string }[] = [
+  { key: 'pending', label: 'En attente', color: '#c6a04a' },
+  { key: 'confirmed', label: 'Confirmées', color: '#3d5a80' },
+  { key: 'shipped', label: 'Expédiées', color: '#2a9d8f' },
+  { key: 'delivered', label: 'Livrées', color: '#2e7d32' },
+  { key: 'cancelled', label: 'Annulées', color: '#9e9e9e' }
+];
+
+const CATEGORY_COLORS = ['#c6a04a', '#3d5a80', '#2a9d8f', '#8d6e63', '#6d6875', '#b5838d'];
+const LOW_STOCK = 3;
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, RouterLink, FormatCurrencyPipe],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, RouterLink, FormatCurrencyPipe, ImageUrlPipe],
   template: `
     <div class="dashboard-container fade-in">
       <div class="header">
         <div class="header-text">
           <h1 class="luxury-title">Vue d'ensemble</h1>
-          <p>Bienvenue dans votre centre de pilotage CARSTYLE.</p>
+          <p>Pilotage boutique {{ brand.name }}{{ brand.contact.city ? ' — ' + brand.contact.city : '' }}.</p>
         </div>
 
         <div class="period-filter" role="group" aria-label="Filtrer par période">
@@ -51,7 +93,7 @@ const PERIODS: Period[] = [
           <div class="metric-info">
             <span class="metric-title">{{m.title}}</span>
             <span class="metric-value">{{m.value}}</span>
-            <span class="metric-trend">{{m.trend}}</span>
+            <span class="metric-trend" [class.warn]="m.warn">{{m.trend}}</span>
           </div>
         </div>
       </div>
@@ -59,7 +101,7 @@ const PERIODS: Period[] = [
       <div class="charts-row">
         <mat-card class="chart-card glass-panel">
           <mat-card-header>
-            <mat-card-title>Chiffre d'Affaires — {{ periodLabel }}</mat-card-title>
+            <mat-card-title>Chiffre d'affaires — {{ periodLabel }}</mat-card-title>
           </mat-card-header>
           <mat-card-content>
             <div class="chart-empty" *ngIf="totalRevenue === 0">
@@ -88,14 +130,14 @@ const PERIODS: Period[] = [
 
         <mat-card class="orders-summary glass-panel">
           <mat-card-header>
-            <mat-card-title>Commandes — {{ periodLabel }}</mat-card-title>
+            <mat-card-title>Dernières commandes</mat-card-title>
           </mat-card-header>
           <mat-card-content>
             <div class="order-item" *ngFor="let order of recentOrders">
               <div class="order-avatar">{{order.userInitial}}</div>
               <div class="order-details">
                 <span class="order-user">{{order.user}}</span>
-                <span class="order-time">{{order.time}}</span>
+                <span class="order-time">{{order.time}} · {{order.statusLabel}}</span>
               </div>
               <span class="order-amount">{{order.amount | formatCurrency}}</span>
             </div>
@@ -103,6 +145,121 @@ const PERIODS: Period[] = [
               <span class="order-time">Aucune commande sur cette période.</span>
             </div>
             <button mat-button color="primary" class="view-all" routerLink="/admin/orders">VOIR TOUTES LES COMMANDES</button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="donuts-row">
+        <mat-card class="donut-card glass-panel">
+          <mat-card-header>
+            <mat-card-title>Statuts des commandes</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="donut-empty" *ngIf="statusTotal === 0">
+              <mat-icon>donut_large</mat-icon>
+              <p>Aucune commande sur cette période.</p>
+            </div>
+            <div class="donut-wrap" *ngIf="statusTotal > 0">
+              <svg viewBox="0 0 36 36" class="donut">
+                <circle class="donut-bg" cx="18" cy="18" r="15.915"></circle>
+                <circle *ngFor="let s of statusSlices" class="donut-seg"
+                        cx="18" cy="18" r="15.915"
+                        [attr.stroke]="s.color"
+                        [attr.stroke-dasharray]="s.dash + ' ' + (100 - s.dash)"
+                        [attr.stroke-dashoffset]="s.offset"></circle>
+                <text x="18" y="16.8" text-anchor="middle" class="donut-num">{{ statusTotal }}</text>
+                <text x="18" y="21.6" text-anchor="middle" class="donut-cap">cmd</text>
+              </svg>
+              <ul class="legend">
+                <li *ngFor="let s of statusSlices">
+                  <span class="swatch" [style.background]="s.color"></span>
+                  <span class="leg-label">{{ s.label }}</span>
+                  <span class="leg-val">{{ s.value }} · {{ s.pct }}%</span>
+                </li>
+              </ul>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="donut-card glass-panel">
+          <mat-card-header>
+            <mat-card-title>Ventes par catégorie</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="donut-empty" *ngIf="categoryTotal === 0">
+              <mat-icon>category</mat-icon>
+              <p>Pas encore de ventes catégorisées.</p>
+            </div>
+            <div class="donut-wrap" *ngIf="categoryTotal > 0">
+              <svg viewBox="0 0 36 36" class="donut">
+                <circle class="donut-bg" cx="18" cy="18" r="15.915"></circle>
+                <circle *ngFor="let s of categorySlices" class="donut-seg"
+                        cx="18" cy="18" r="15.915"
+                        [attr.stroke]="s.color"
+                        [attr.stroke-dasharray]="s.dash + ' ' + (100 - s.dash)"
+                        [attr.stroke-dashoffset]="s.offset"></circle>
+                <text x="18" y="16.8" text-anchor="middle" class="donut-num">{{ categoryTotal }}</text>
+                <text x="18" y="21.6" text-anchor="middle" class="donut-cap">pcs</text>
+              </svg>
+              <ul class="legend">
+                <li *ngFor="let s of categorySlices">
+                  <span class="swatch" [style.background]="s.color"></span>
+                  <span class="leg-label">{{ s.label }}</span>
+                  <span class="leg-val">{{ s.value }} · {{ s.pct }}%</span>
+                </li>
+              </ul>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="lists-row">
+        <mat-card class="list-card glass-panel">
+          <mat-card-header>
+            <mat-card-title>Meilleurs articles</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="list-empty" *ngIf="topProducts.length === 0">
+              <mat-icon>inventory_2</mat-icon>
+              <p>Aucun article commandé sur cette période.</p>
+            </div>
+            <a class="top-row" *ngFor="let p of topProducts; let i = index" routerLink="/admin/products">
+              <span class="rank">{{ i + 1 }}</span>
+              <img *ngIf="p.image" [src]="p.image | imageUrl" [alt]="p.name" class="thumb">
+              <div class="thumb placeholder" *ngIf="!p.image"><mat-icon>image</mat-icon></div>
+              <div class="top-info">
+                <span class="top-name">{{ p.name }}</span>
+                <span class="top-meta">{{ p.category }} · {{ p.qty }} vendus</span>
+              </div>
+              <span class="top-rev">
+                {{ p.revenue | formatCurrency }}
+                <small *ngIf="p.profit !== null">marge {{ p.profit | formatCurrency }}</small>
+              </span>
+            </a>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="list-card glass-panel">
+          <mat-card-header>
+            <mat-card-title>Stock bas</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="list-empty" *ngIf="lowStock.length === 0">
+              <mat-icon>check_circle</mat-icon>
+              <p>Aucun produit sous le seuil ({{ lowStockThreshold }}).</p>
+            </div>
+            <a class="stock-row" *ngFor="let p of lowStock" routerLink="/admin/stock">
+              <img *ngIf="p.image" [src]="p.image | imageUrl" [alt]="p.name" class="thumb">
+              <div class="thumb placeholder" *ngIf="!p.image"><mat-icon>image</mat-icon></div>
+              <div class="top-info">
+                <span class="top-name">{{ p.name }}</span>
+                <span class="top-meta">{{ p.category }}</span>
+              </div>
+              <span class="stock-badge" [class.out]="p.stock <= 0">
+                {{ p.stock <= 0 ? 'Rupture' : p.stock + ' restants' }}
+              </span>
+            </a>
+            <button mat-button class="view-all" routerLink="/admin/stock">GÉRER LE STOCK</button>
           </mat-card-content>
         </mat-card>
       </div>
@@ -124,7 +281,7 @@ const PERIODS: Period[] = [
     .period-btn:hover { color: var(--luxe-charcoal); }
     .period-btn.active { background: var(--luxe-black); color: var(--luxe-white); box-shadow: var(--shadow-card); }
 
-    .metrics-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 30px; margin-bottom: 50px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px; margin-bottom: 40px; }
     .metric-card { background: var(--luxe-white); padding: 30px; border-radius: var(--radius-md); border: 1px solid var(--luxe-border); display: flex; gap: 20px; align-items: center; box-shadow: var(--shadow-subtle); transition: var(--transition-smooth); }
     .metric-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
     .metric-icon { width: 55px; height: 55px; border-radius: var(--radius-md); background: var(--luxe-offwhite); color: var(--luxe-charcoal); border: 1px solid var(--luxe-border); display: flex; align-items: center; justify-content: center; }
@@ -132,9 +289,14 @@ const PERIODS: Period[] = [
     .metric-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--luxe-text-muted); display: block; margin-bottom: 8px; font-weight: 500; }
     .metric-value { font-size: 1.8rem; font-weight: 400; color: var(--luxe-black); display: block; font-family: var(--font-heading); }
     .metric-trend { font-size: 0.75rem; margin-top: 8px; display: block; font-weight: 500; color: #2e7d32; }
+    .metric-trend.warn { color: #b45309; }
 
-    .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
-    .chart-card, .orders-summary { border-radius: var(--radius-md); padding: 30px; border: 1px solid var(--luxe-border); box-shadow: var(--shadow-subtle) !important; background: var(--luxe-white) !important; }
+    .charts-row, .donuts-row, .lists-row { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; margin-bottom: 40px; }
+    .donuts-row, .lists-row { grid-template-columns: 1fr 1fr; }
+    .chart-card, .orders-summary, .donut-card, .list-card {
+      border-radius: var(--radius-md); padding: 30px; border: 1px solid var(--luxe-border);
+      box-shadow: var(--shadow-subtle) !important; background: var(--luxe-white) !important;
+    }
     mat-card-header { padding: 0 0 20px 0 !important; border-bottom: 1px solid var(--luxe-border); margin-bottom: 20px; }
     mat-card-title { font-family: var(--font-body) !important; font-size: 1.1rem !important; letter-spacing: 2px; text-transform: uppercase; font-weight: 600 !important; color: var(--luxe-charcoal); }
 
@@ -144,8 +306,8 @@ const PERIODS: Period[] = [
     .chart-dot { fill: var(--luxe-gold); stroke: white; stroke-width: 2; }
     .chart-value { fill: var(--luxe-charcoal); font-size: 12px; font-weight: 600; }
     .chart-label { fill: var(--luxe-text-muted); font-size: 13px; font-weight: 500; }
-    .chart-empty { text-align: center; padding: 90px 20px; color: var(--luxe-text-muted); }
-    .chart-empty mat-icon { font-size: 3.5rem; width: 56px; height: 56px; margin-bottom: 12px; }
+    .chart-empty, .donut-empty, .list-empty { text-align: center; padding: 70px 20px; color: var(--luxe-text-muted); }
+    .chart-empty mat-icon, .donut-empty mat-icon, .list-empty mat-icon { font-size: 3.5rem; width: 56px; height: 56px; margin-bottom: 12px; }
 
     .order-item { display: flex; align-items: center; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--luxe-border); }
     .order-item:last-child { border-bottom: none; }
@@ -155,12 +317,47 @@ const PERIODS: Period[] = [
     .order-time { font-size: 0.8rem; color: var(--luxe-text-muted); }
     .order-amount { font-weight: 600; color: var(--luxe-charcoal); font-size: 1.05rem; }
 
+    .donut-wrap { display: flex; align-items: center; gap: 28px; padding: 8px 0 4px; }
+    .donut { width: 168px; height: 168px; flex-shrink: 0; }
+    .donut-bg { fill: none; stroke: var(--luxe-offwhite); stroke-width: 3.2; }
+    .donut-seg { fill: none; stroke-width: 3.2; stroke-linecap: butt; transform: rotate(-90deg); transform-origin: 18px 18px; }
+    .donut-num { font-size: 6px; font-weight: 600; fill: var(--luxe-black); font-family: var(--font-heading); }
+    .donut-cap { font-size: 2.6px; letter-spacing: 0.4px; text-transform: uppercase; fill: var(--luxe-text-muted); }
+    .legend { list-style: none; margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+    .legend li { display: flex; align-items: center; gap: 10px; font-size: 0.86rem; }
+    .swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .leg-label { flex: 1; color: var(--luxe-charcoal); }
+    .leg-val { color: var(--luxe-text-muted); font-size: 0.78rem; white-space: nowrap; }
+
+    .top-row, .stock-row {
+      display: flex; align-items: center; gap: 14px; padding: 14px 0;
+      border-bottom: 1px solid var(--luxe-border); text-decoration: none; color: inherit;
+    }
+    .top-row:last-child, .stock-row:last-child { border-bottom: none; }
+    .top-row:hover .top-name, .stock-row:hover .top-name { color: var(--luxe-gold); }
+    .rank {
+      width: 22px; font-family: var(--font-heading); font-size: 1.05rem; color: var(--luxe-gold); text-align: center;
+    }
+    .thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid var(--luxe-border); background: var(--luxe-offwhite); }
+    .thumb.placeholder { display: flex; align-items: center; justify-content: center; color: var(--luxe-text-muted); }
+    .thumb.placeholder mat-icon { font-size: 20px; width: 20px; height: 20px; }
+    .top-info { flex: 1; min-width: 0; }
+    .top-name { display: block; font-weight: 500; font-size: 0.92rem; color: var(--luxe-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .top-meta { font-size: 0.76rem; color: var(--luxe-text-muted); }
+    .top-rev { font-weight: 600; color: var(--luxe-charcoal); font-size: 0.92rem; white-space: nowrap; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .top-rev small { font-weight: 500; font-size: 0.7rem; color: #2e7d32; }
+    .stock-badge {
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase;
+      padding: 6px 10px; border-radius: var(--radius-full); background: #fff7ed; color: #b45309; white-space: nowrap;
+    }
+    .stock-badge.out { background: #fef2f2; color: #b91c1c; }
+
     .view-all { width: 100%; margin-top: 20px; letter-spacing: 2px; border: 1px solid var(--luxe-border) !important; color: var(--luxe-charcoal) !important; border-radius: var(--radius-sm) !important; padding: 10px !important; }
     .view-all:hover { background: var(--luxe-black) !important; color: var(--luxe-white) !important; }
 
     @media (max-width: 1200px) {
       .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .charts-row { grid-template-columns: 1fr; }
+      .charts-row, .donuts-row, .lists-row { grid-template-columns: 1fr; }
       .header { flex-direction: column; }
       .period-filter { width: 100%; overflow-x: auto; }
     }
@@ -168,27 +365,36 @@ const PERIODS: Period[] = [
       .metrics-grid { grid-template-columns: 1fr; gap: 12px; }
       .header h1 { font-size: 1.8rem; }
       .metric-card { padding: 18px; }
+      .donut-wrap { flex-direction: column; align-items: stretch; }
+      .donut { margin: 0 auto; }
     }
   `]
 })
 export class DashboardComponent implements OnInit {
   periods = PERIODS;
   selectedPeriod = '7d';
+  lowStockThreshold = LOW_STOCK;
 
-  metrics: any[] = [];
-  points: any[] = [];
+  metrics: { title: string; value: string; icon: string; trend: string; warn?: boolean }[] = [];
+  points: { x: number; y: number; label: string; value: number }[] = [];
   linePoints = '';
   areaPoints = '';
-  gridLines: any[] = [];
-  recentOrders: any[] = [];
+  gridLines: { y: number }[] = [];
+  recentOrders: { user: string; userInitial: string; time: string; amount: string; statusLabel: string }[] = [];
+  topProducts: TopProduct[] = [];
+  lowStock: LowStock[] = [];
+  statusSlices: DonutSlice[] = [];
+  categorySlices: DonutSlice[] = [];
+  statusTotal = 0;
+  categoryTotal = 0;
   totalRevenue = 0;
   private ordersData: any[] = [];
-  private usersData: any[] = [];
+  private productsData: any[] = [];
 
   readonly chartWidth = 700;
   readonly chartHeight = 300;
 
-  constructor(private crud: CrudService, private settings: SettingsService) {}
+  constructor(private crud: CrudService, private settings: SettingsService, public brand: BrandService) {}
 
   get periodLabel(): string {
     return this.periods.find(p => p.value === this.selectedPeriod)?.label || '';
@@ -196,7 +402,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.settings.currency$.subscribe(() => {
-      if (this.ordersData.length || this.usersData.length) {
+      if (this.ordersData.length || this.productsData.length) {
         this.recalculateAll();
       }
     });
@@ -206,11 +412,11 @@ export class DashboardComponent implements OnInit {
   loadDashboardData() {
     forkJoin({
       orders: this.crud.getAll<any>('orders'),
-      users: this.crud.getAll<any>('users')
+      products: this.crud.getPage<any>('products', { limit: 100 })
     }).subscribe({
-      next: ({ orders, users }) => {
-        this.ordersData = orders;
-        this.usersData = users;
+      next: ({ orders, products }) => {
+        this.ordersData = Array.isArray(orders) ? orders : [];
+        this.productsData = Array.isArray(products) ? products : (products?.data || []);
         this.recalculateAll();
       },
       error: (err) => {
@@ -226,12 +432,15 @@ export class DashboardComponent implements OnInit {
 
   private recalculateAll() {
     const filtered = this.filterByPeriod(this.ordersData);
-    this.calculateMetrics(filtered, this.usersData);
+    this.calculateMetrics(filtered);
     this.calculateChart(filtered);
-    this.calculateRecentOrders(filtered, this.usersData);
+    this.calculateRecentOrders(filtered);
+    this.calculateStatusDonut(filtered);
+    this.calculateCategoryDonut(filtered);
+    this.calculateTopProducts(filtered);
+    this.calculateLowStock();
   }
 
-  /** Date de début de la période sélectionnée (null = pas de borne, "Depuis le début") */
   private getPeriodStart(): Date | null {
     const now = new Date();
     switch (this.selectedPeriod) {
@@ -249,24 +458,54 @@ export class DashboardComponent implements OnInit {
     return orders.filter(o => new Date(o.createdAt || o.created_at) >= start);
   }
 
-  calculateMetrics(orders: any[], users: any[]) {
-    const activeOrders = orders.filter(o => o.status !== 'cancelled');
-    const totalRevenue = activeOrders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
-    const clients = users.filter(u => u.role === 'client');
-    const newClientsCount = clients.length;
-    const conversionRate = newClientsCount > 0
-      ? ((orders.length / newClientsCount) * 100).toFixed(1) + '%'
-      : '0%';
+  private activeOrders(orders: any[]): any[] {
+    return orders.filter(o => o.status !== 'cancelled');
+  }
+
+  calculateMetrics(orders: any[]) {
+    const active = this.activeOrders(orders);
+    const revenue = active.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
+    const pending = orders.filter(o => o.status === 'pending').length;
+    const aov = active.length ? revenue / active.length : 0;
+    const { profit, missing } = this.periodProfit(active);
+    const symbol = this.settings.currency.symbol;
 
     this.metrics = [
-      { title: 'Chiffre d\'Affaires', value: `${totalRevenue.toLocaleString('fr-FR')} ${this.settings.currency.symbol}`, icon: 'payments', trend: this.periodLabel },
-      { title: 'Commandes', value: orders.length.toString(), icon: 'shopping_cart', trend: `${activeOrders.length} actives — ${this.periodLabel.toLowerCase()}` },
-      { title: 'Clients', value: newClientsCount.toString(), icon: 'person_add', trend: 'Comptes clients (total)' },
-      { title: 'Taux Conversion', value: conversionRate, icon: 'insights', trend: 'Commandes / clients' }
+      {
+        title: 'Chiffre d\'affaires',
+        value: `${revenue.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} ${symbol}`,
+        icon: 'payments',
+        trend: this.periodLabel
+      },
+      {
+        title: 'Profit',
+        value: `${profit.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} ${symbol}`,
+        icon: 'trending_up',
+        trend: missing ? `${missing} ligne(s) sans prix d'achat` : 'Vente − achat',
+        warn: missing > 0
+      },
+      {
+        title: 'Commandes',
+        value: String(orders.length),
+        icon: 'shopping_cart',
+        trend: `${active.length} actives — ${this.periodLabel.toLowerCase()}`
+      },
+      {
+        title: 'Panier moyen',
+        value: `${aov.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`,
+        icon: 'account_balance_wallet',
+        trend: 'CA ÷ commandes actives'
+      },
+      {
+        title: 'En attente',
+        value: String(pending),
+        icon: 'hourglass_empty',
+        trend: pending ? 'À traiter' : 'RAS',
+        warn: pending > 0
+      }
     ];
   }
 
-  /** Construit les segments (buckets) du graphique selon la période choisie. */
   private buildBuckets(): { label: string; from: Date; to: Date; value: number }[] {
     const now = new Date();
     const daysShort = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
@@ -281,14 +520,12 @@ export class DashboardComponent implements OnInit {
         buckets.push({ label: i === 0 ? 'Auj.' : daysShort[d.getDay()], from, to, value: 0 });
       }
     } else if (this.selectedPeriod === '30d') {
-      // 6 segments de 5 jours
       for (let i = 5; i >= 0; i--) {
         const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i * 5, 23, 59, 59, 999);
         const from = new Date(to.getFullYear(), to.getMonth(), to.getDate() - 4);
         buckets.push({ label: `${from.getDate()}/${from.getMonth() + 1}`, from, to, value: 0 });
       }
     } else if (this.selectedPeriod === '3m') {
-      // 12 segments hebdomadaires
       for (let i = 11; i >= 0; i--) {
         const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i * 7, 23, 59, 59, 999);
         const from = new Date(to.getFullYear(), to.getMonth(), to.getDate() - 6);
@@ -302,7 +539,6 @@ export class DashboardComponent implements OnInit {
         buckets.push({ label: monthsShort[d.getMonth()], from, to, value: 0 });
       }
     } else {
-      // 'all' — un segment par mois depuis la commande la plus ancienne (24 mois max affichés)
       const earliest = this.ordersData.length
         ? this.ordersData.reduce((min: Date, o: any) => {
             const d = new Date(o.createdAt || o.created_at);
@@ -328,7 +564,7 @@ export class DashboardComponent implements OnInit {
 
   calculateChart(orders: any[]) {
     const buckets = this.buildBuckets();
-    const activeOrders = orders.filter(o => o.status !== 'cancelled');
+    const activeOrders = this.activeOrders(orders);
 
     activeOrders.forEach(o => {
       const date = new Date(o.createdAt || o.created_at);
@@ -360,7 +596,7 @@ export class DashboardComponent implements OnInit {
     }));
   }
 
-  calculateRecentOrders(orders: any[], users: any[]) {
+  calculateRecentOrders(orders: any[]) {
     const sorted = [...orders].sort((a, b) => {
       const dateA = new Date(a.createdAt || a.created_at).getTime();
       const dateB = new Date(b.createdAt || b.created_at).getTime();
@@ -368,36 +604,153 @@ export class DashboardComponent implements OnInit {
     });
 
     this.recentOrders = sorted.slice(0, 6).map(o => {
-      const userObj = users.find(u => u.id === o.user_id);
-      const name = userObj ? `${userObj.first_name} ${userObj.last_name[0]}.` : 'Client';
-      const userInitial = userObj?.first_name ? userObj.first_name[0].toUpperCase() : 'C';
-
-      const diffMs = new Date().getTime() - new Date(o.createdAt || o.created_at).getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      let timeStr = 'il y a quelques instants';
-      if (diffMins >= 60) {
-        const diffHrs = Math.floor(diffMins / 60);
-        if (diffHrs >= 24) {
-          const diffDays = Math.floor(diffHrs / 24);
-          if (diffDays >= 30) {
-            const diffMonths = Math.floor(diffDays / 30);
-            timeStr = `il y a ${diffMonths} mois`;
-          } else {
-            timeStr = `il y a ${diffDays}j`;
-          }
-        } else {
-          timeStr = `il y a ${diffHrs}h`;
-        }
-      } else if (diffMins > 0) {
-        timeStr = `il y a ${diffMins} min`;
-      }
+      const userObj = o.User || o.user;
+      const guest = String(o.guest_name || '').trim();
+      const name = userObj
+        ? `${userObj.first_name} ${(userObj.last_name || '').charAt(0)}.`.trim()
+        : (guest || 'Invité');
+      const userInitial = (userObj?.first_name || guest || 'I').charAt(0).toUpperCase();
 
       return {
         user: name,
         userInitial,
-        time: timeStr,
-        amount: parseFloat(o.total_amount || 0).toFixed(2)
+        time: this.relativeTime(o.createdAt || o.created_at),
+        amount: parseFloat(o.total_amount || 0).toFixed(2),
+        statusLabel: STATUS_META.find(s => s.key === o.status)?.label || o.status || ''
       };
     });
+  }
+
+  calculateStatusDonut(orders: any[]) {
+    const counts = new Map<string, number>();
+    orders.forEach(o => counts.set(o.status, (counts.get(o.status) || 0) + 1));
+    const rows = STATUS_META
+      .map(meta => ({ ...meta, value: counts.get(meta.key) || 0 }))
+      .filter(row => row.value > 0);
+    this.statusTotal = rows.reduce((s, r) => s + r.value, 0);
+    this.statusSlices = this.toDonut(rows);
+  }
+
+  calculateCategoryDonut(orders: any[]) {
+    const counts = new Map<string, number>();
+    this.activeOrders(orders).forEach(order => {
+      (order.items || []).forEach((item: any) => {
+        const product = item.Product || item.product;
+        const category = String(product?.category || item.category || 'Autres').trim() || 'Autres';
+        counts.set(category, (counts.get(category) || 0) + Number(item.quantity || 0));
+      });
+    });
+    const rows = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, value], i) => ({
+        key: label,
+        label,
+        value,
+        color: CATEGORY_COLORS[i % CATEGORY_COLORS.length]
+      }));
+    this.categoryTotal = rows.reduce((s, r) => s + r.value, 0);
+    this.categorySlices = this.toDonut(rows);
+  }
+
+  calculateTopProducts(orders: any[]) {
+    const map = new Map<string, TopProduct>();
+    this.activeOrders(orders).forEach(order => {
+      (order.items || []).forEach((item: any) => {
+        const product = item.Product || item.product || {};
+        const id = String(item.product_id || product.id || '');
+        if (!id) return;
+        const qty = Number(item.quantity || 0);
+        const unit = Number(item.unit_price || product.price || 0);
+        const current = map.get(id) || {
+          id,
+          name: product.name || 'Article',
+          category: product.category || 'Autres',
+          image: product.image_url || '',
+          qty: 0,
+          revenue: 0,
+          profit: 0,
+          stock: product.stock == null ? null : Number(product.stock)
+        };
+        current.qty += qty;
+        current.revenue += qty * unit;
+        const cost = this.lineCost(item);
+        if (cost === null) current.profit = current.profit === 0 ? null : current.profit;
+        else if (current.profit !== null) current.profit += (unit - cost) * qty;
+        map.set(id, current);
+      });
+    });
+    this.topProducts = [...map.values()]
+      .sort((a, b) => b.qty - a.qty || b.revenue - a.revenue)
+      .slice(0, 5);
+  }
+
+  calculateLowStock() {
+    this.lowStock = this.productsData
+      .filter(p => Number(p.stock) <= LOW_STOCK)
+      .sort((a, b) => Number(a.stock) - Number(b.stock))
+      .slice(0, 6)
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category || 'Autres',
+        image: p.image_url || '',
+        stock: Number(p.stock)
+      }));
+  }
+
+  private lineCost(item: any): number | null {
+    const snap = item?.unit_cost;
+    if (snap !== null && snap !== undefined && snap !== '') {
+      const n = Number(snap);
+      return Number.isFinite(n) ? n : null;
+    }
+    const product = item?.Product || item?.product;
+    if (product?.cost_price !== null && product?.cost_price !== undefined && product?.cost_price !== '') {
+      const n = Number(product.cost_price);
+      return Number.isFinite(n) ? n : null;
+    }
+    return null;
+  }
+
+  private periodProfit(orders: any[]): { profit: number; missing: number } {
+    let profit = 0;
+    let missing = 0;
+    orders.forEach(order => {
+      (order.items || []).forEach((item: any) => {
+        const qty = Number(item.quantity || 0);
+        const unit = Number(item.unit_price || 0);
+        const cost = this.lineCost(item);
+        if (cost === null) missing += 1;
+        else profit += (unit - cost) * qty;
+      });
+    });
+    return { profit, missing };
+  }
+
+  private toDonut(rows: { key: string; label: string; value: number; color: string }[]): DonutSlice[] {
+    const total = rows.reduce((s, r) => s + r.value, 0) || 1;
+    let acc = 0;
+    return rows.map(row => {
+      const pct = Math.round((row.value / total) * 100);
+      const slice: DonutSlice = {
+        ...row,
+        dash: pct,
+        offset: -acc,
+        pct
+      };
+      acc += pct;
+      return slice;
+    });
+  }
+
+  private relativeTime(raw: string): string {
+    const diffMins = Math.floor((Date.now() - new Date(raw).getTime()) / 60000);
+    if (diffMins < 1) return 'à l’instant';
+    if (diffMins < 60) return `il y a ${diffMins} min`;
+    const diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return `il y a ${diffHrs}h`;
+    const diffDays = Math.floor(diffHrs / 24);
+    if (diffDays < 30) return `il y a ${diffDays}j`;
+    return `il y a ${Math.floor(diffDays / 30)} mois`;
   }
 }

@@ -1,0 +1,65 @@
+{
+  "slug": "carstyle",
+  "brand": {
+    "name": "CARSTYLE",
+    "nameStart": "CAR",
+    "nameAccent": "STYLE",
+    "legalName": "CARSTYLE",
+    "logo": "assets/logo.webp"
+  },
+  "colors": {
+    "primary": "#D90429",
+    "primaryHover": "#b00321",
+    "secondary": "#0a0a0a"
+  },
+  "contact": {
+    "email": "contact@carstyle.tn",
+    "emailOrders": "commandes@carstyle.tn",
+    "phoneDisplay": "+216 53 933 751",
+    "whatsapp": "21653933751",
+    "whatsappLabel": "WhatsApp 53 933 751",
+    "hours": "Du lundi au samedi, 9h – 18h",
+    "addressLine1": "Avenue Bayrem Ettounsi",
+    "addressLine2": "Le Bardo 2000, Tunisie",
+    "city": "Le Bardo",
+    "country": "Tunisie"
+  },
+  "social": {
+    "facebook": "https://www.facebook.com/profile.php?id=100082205727145",
+    "instagram": "https://www.instagram.com/carstyle_tunisia"
+  },
+  "copy": {
+    "seoTitle": "Carstyle | Accessoires auto, detailing & entretien — Tunisie",
+    "seoDescription": "Carstyle Le Bardo : boutique en ligne d'accessoires automobile, detailing et entretien. Livraison partout en Tunisie, paiement à la livraison.",
+    "seoKeywords": "accessoires auto, detailing, entretien voiture, Carstyle, Tunisie, Le Bardo",
+    "tagline": "Carstyle — Le Bardo",
+    "heroTitle": "Accessoires",
+    "heroTitleEm": "auto",
+    "heroSubtitle": "Entretien, detailing et accessoires pour habiller, protéger et personnaliser votre voiture. Livraison partout en Tunisie.",
+    "heroAria": "Atelier Carstyle Le Bardo",
+    "topbarShipping": "Livraison 48h en Tunisie",
+    "topbarPayment": "Paiement à la livraison",
+    "atelierEyebrow": "Le Bardo",
+    "atelierTitle": "L’atelier Carstyle",
+    "atelierBody": "Boutique tunisienne d’accessoires auto, detailing et entretien. Des produits utiles, durables, au bon prix — pour habiller et protéger votre véhicule.",
+    "atelierImage": "assets/covering.webp",
+    "atelierBullets": [
+      "Accessoires intérieur & extérieur",
+      "Detailing et produits d’entretien",
+      "Conseil et retrait à Le Bardo"
+    ],
+    "reviewsTitle": "Ils parlent de Carstyle",
+    "newsletterTitle": "Rejoignez Carstyle",
+    "newsletterBody": "Offres, nouveautés accessoires et conseils entretien — directement dans votre boîte mail.",
+    "footerBlurb": "Boutique tunisienne d'accessoires auto, detailing et entretien. Habiller, protéger et personnaliser votre véhicule.",
+    "footerCertPickup": "Atelier Le Bardo",
+    "copyrightExtra": "Accessoires auto, Le Bardo",
+    "contactTitle": "Contactez Carstyle",
+    "contactIntro": "Une question sur un accessoire, votre commande ou un conseil entretien ? Notre équipe au Bardo vous répond sous 24h ouvrées.",
+    "trustPickupTitle": "Retrait Bardo",
+    "trustPickupSub": "Atelier Carstyle",
+    "engagementTitle": "Engagement Carstyle",
+    "engagementBody": "Produits sélectionnés pour l'usage quotidien, conseils atelier et suivi après commande.",
+    "reviewSubtitle": "Partagez votre expérience avec Carstyle"
+  }
+}

@@ -9,6 +9,7 @@ const { auth, authorize, requirePermission } = require('../middlewares/auth');
 const { Product, Category } = require('../models');
 const { parseCsv, normalizeHeader, parsePrice } = require('../utils/csv');
 const { parseSpreadsheet } = require('../utils/spreadsheet');
+const audit = require('../services/auditService');
 
 const router = express.Router();
 
@@ -35,9 +36,11 @@ const upload = multer({
 const COLUMN_ALIASES = {
   reference: ['ref', 'reference', 'refarticle', 'code', 'codearticle', 'sku'],
   category: ['categorie', 'category', 'famille', 'rayon'],
+  subcategory: ['souscategorie', 'subcategory', 'souscat', 'sousfamille', 'sousrayon'],
   name: ['designation', 'designationproduit', 'nom', 'nomproduit', 'libelle', 'produit', 'name'],
   contenance: ['contenance', 'volume', 'poids', 'format', 'taille'],
   price: ['prix', 'price', 'prixttc', 'prixvente', 'prixunitaire', 'pu'],
+  cost_price: ['prixachat', 'cost', 'costprice', 'cout', 'coutderevient', 'pa', 'prixrevient', 'achat'],
   image: ['image', 'imageurl', 'urlimage', 'photo', 'lienimage'],
   stock: ['stock', 'quantite', 'qte', 'qty', 'quantity'],
   description: ['description', 'desc', 'details', 'detail']
@@ -142,20 +145,20 @@ async function unpackImport(file) {
   };
 }
 
-async function resolveCategory(rawName, cache, createdCategories) {
+async function resolveCategory(rawName, cache, createdCategories, parentId = null) {
   const name = String(rawName || '').trim();
   if (!name) return '';
 
-  const key = name.toLowerCase();
+  const key = `${parentId || ''}::${name.toLowerCase()}`;
   if (cache.has(key)) return cache.get(key);
 
   let category = await Category.findOne({ where: { name: { [Op.iLike]: name } } });
   if (!category) {
-    category = await Category.create({ name });
-    createdCategories.push(category.name);
+    category = await Category.create({ name, parent_id: parentId || null });
+    createdCategories.push(parentId ? `${name}` : category.name);
   }
-  cache.set(key, category.name);
-  return category.name;
+  cache.set(key, category);
+  return category;
 }
 
 router.post('/import', auth, authorize('admin', 'seller'), requirePermission('products.manage'), (req, res) => {
@@ -223,6 +226,13 @@ router.post('/import', auth, authorize('admin', 'seller'), requirePermission('pr
           const rawStock = cell(row, 'stock');
           const parsedStock = Number.parseInt(rawStock, 10);
 
+          const rawCost = cell(row, 'cost_price');
+          const parsedCost = rawCost ? parsePrice(rawCost) : null;
+
+          const parent = await resolveCategory(cell(row, 'category'), categoryCache, createdCategories);
+          const child = parent
+            ? await resolveCategory(cell(row, 'subcategory'), categoryCache, createdCategories, parent.id)
+            : '';
           const payload = {
             reference: reference || null,
             name,
@@ -230,8 +240,12 @@ router.post('/import', auth, authorize('admin', 'seller'), requirePermission('pr
             description: cell(row, 'description') || null,
             price,
             image_url: normalizeImageUrl(cell(row, 'image'), packedImages),
-            category: await resolveCategory(cell(row, 'category'), categoryCache, createdCategories)
+            category: parent ? parent.name : '',
+            subcategory: child ? child.name : null
           };
+          if (Number.isFinite(parsedCost) && parsedCost >= 0) {
+            payload.cost_price = parsedCost;
+          }
 
           // Ré-importer le même fichier met à jour les produits au lieu de les dupliquer.
           const existing = reference
@@ -253,6 +267,12 @@ router.post('/import', auth, authorize('admin', 'seller'), requirePermission('pr
         }
       }
 
+      audit.log({
+        req,
+        action: 'catalog.import',
+        entity: 'product',
+        summary: `a importé le catalogue (${created} créé${created > 1 ? 's' : ''}, ${updated} mis à jour)`
+      });
       res.json({
         total: dataRows.length,
         created,

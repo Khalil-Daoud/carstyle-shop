@@ -7,7 +7,8 @@ const whatsappService = require('../services/whatsappService');
 const settingsService = require('../services/settingsService');
 const loyaltyService = require('../services/loyaltyService');
 const orderNotify = require('../services/orderNotify');
-const { newPublicToken, isPublicToken, toPublicOrder, trackingUrl, parseExtraFields } = require('../utils/orderPublic');
+const audit = require('../services/auditService');
+const { newPublicToken, isPublicToken, toPublicOrder, trackingUrl, parseExtraFields, orderReference } = require('../utils/orderPublic');
 
 function withParsedExtra(order) {
   const json = typeof order?.toJSON === 'function' ? order.toJSON() : { ...order };
@@ -15,12 +16,38 @@ function withParsedExtra(order) {
   return json;
 }
 
+function stripOrderCosts(order) {
+  const json = order && typeof order.toJSON === 'function' ? withParsedExtra(order) : { ...order };
+  (json.items || []).forEach((item) => {
+    delete item.unit_cost;
+    if (item.Product) delete item.Product.cost_price;
+    if (item.product) delete item.product.cost_price;
+  });
+  return json;
+}
+
+function canSeeOrderCosts(user) {
+  return user?.role === 'admin' || user?.role === 'seller';
+}
+
+function presentOrder(order, user) {
+  return canSeeOrderCosts(user) ? withParsedExtra(order) : stripOrderCosts(order);
+}
+
 // Le client associé à une commande était inclus en entier, donc avec le hash bcrypt
 // de son mot de passe. On ne remonte que les champs affichés par l'interface.
 const ORDER_USER_ATTRIBUTES = ['id', 'first_name', 'last_name', 'email', 'loyalty_points'];
-const orderIncludes = () => [
+const orderIncludes = ({ includeCost = false } = {}) => [
   { model: User, as: 'User', attributes: ORDER_USER_ATTRIBUTES },
-  { model: OrderItem, as: 'items', include: [{ model: Product }] }
+  {
+    model: OrderItem,
+    as: 'items',
+    ...(includeCost ? {} : { attributes: { exclude: ['unit_cost'] } }),
+    include: [{
+      model: Product,
+      ...(includeCost ? {} : { attributes: { exclude: ['cost_price'] } })
+    }]
+  }
 ];
 
 // Les commandes invité sont anonymes et décrémentent le stock : on plafonne par IP.
@@ -137,11 +164,16 @@ router.post('/', optionalAuth, guestOrderLimiter, async (req, res) => {
           throw new Error(`Stock insuffisant pour "${product.name}"`);
         }
         const unitPrice = Number(product.price);
+        const rawCost = product.cost_price;
+        const unitCost = rawCost === null || rawCost === undefined || rawCost === ''
+          ? null
+          : Number(rawCost);
         total += unitPrice * quantity;
         orderItemsData.push({
           product_id: product.id,
           quantity,
-          unit_price: unitPrice
+          unit_price: unitPrice,
+          unit_cost: Number.isFinite(unitCost) ? unitCost : null
         });
         await product.update({ stock: product.stock - quantity }, { transaction: t });
       }
@@ -181,8 +213,12 @@ router.post('/', optionalAuth, guestOrderLimiter, async (req, res) => {
       return order;
     });
 
-    // Fetch the full order with relations for the notification
-    const fullOrder = await Order.findByPk(newOrder.id, { include: orderIncludes() });
+    // Le prix d'achat reste en base (snapshot unit_cost) pour le dashboard.
+    // Il ne sort jamais vers le navigateur boutique — invité ou client.
+    const staff = canSeeOrderCosts(req.user);
+    const fullOrder = await Order.findByPk(newOrder.id, {
+      include: orderIncludes({ includeCost: staff })
+    });
 
     // Boutique + client (email / WhatsApp). L'échec d'un envoi ne casse pas la commande.
     whatsappService.sendOrderNotification(fullOrder).catch(err => console.error('[WhatsApp] send error', err));
@@ -191,9 +227,16 @@ router.post('/', optionalAuth, guestOrderLimiter, async (req, res) => {
       return { email: false, whatsapp: false };
     });
 
-    const payload = withParsedExtra(fullOrder);
+    const payload = presentOrder(fullOrder, req.user);
     payload.tracking_url = trackingUrl(fullOrder.public_token);
     payload.notified = notified;
+    audit.log({
+      req,
+      action: 'order.create',
+      entity: 'order',
+      entityId: fullOrder.id,
+      summary: `a passé la commande ${orderReference(fullOrder)} (${fullOrder.total_amount})`
+    });
     return res.status(201).json(payload);
   } catch (err) {
     return res.status(400).json({ message: err.message || 'Erreur lors de la création de la commande' });
@@ -255,13 +298,27 @@ router.put('/:id', auth, authorize('admin', 'seller'), async (req, res) => {
       if (nextStatus) {
         await order.update({ status: nextStatus }, { transaction: t });
       }
-      return { id: order.id, statusChanged: Boolean(nextStatus && nextStatus !== previousStatus) };
+      return {
+        id: order.id,
+        previousStatus,
+        nextStatus,
+        statusChanged: Boolean(nextStatus && nextStatus !== previousStatus)
+      };
     });
 
     if (!updated) return res.status(404).json({ message: 'Order not found' });
-    const full = await Order.findByPk(updated.id, { include: orderIncludes() });
+    const full = await Order.findByPk(updated.id, { include: orderIncludes({ includeCost: true }) });
     if (updated.statusChanged) {
       orderNotify.notifyOrderStatus(full).catch(err => console.error('[Notify] status error', err));
+      const labels = { pending: 'En attente', confirmed: 'Confirmée', shipped: 'Expédiée', delivered: 'Livrée', cancelled: 'Annulée' };
+      audit.log({
+        req,
+        action: updated.nextStatus === 'cancelled' ? 'order.cancel' : 'order.status',
+        entity: 'order',
+        entityId: full.id,
+        summary: `a passé ${orderReference(full)} de « ${labels[updated.previousStatus] || updated.previousStatus} » à « ${labels[updated.nextStatus] || updated.nextStatus} »`,
+        meta: { from: updated.previousStatus, to: updated.nextStatus }
+      });
     }
     res.json(withParsedExtra(full));
   } catch (err) {
@@ -273,23 +330,33 @@ router.put('/:id', auth, authorize('admin', 'seller'), async (req, res) => {
 router.get('/', auth, async (req, res, next) => {
   try {
     const where = {};
-    if (req.user.role === 'client') {
+    const mine = req.query.mine === '1' || req.query.mine === 'true';
+    if (req.user.role === 'client' || mine) {
       where.user_id = req.user.id;
     }
     if (req.query.status && ALLOWED_STATUSES.includes(String(req.query.status))) {
       where.status = req.query.status;
     }
+    if (canSeeOrderCosts(req.user) && req.query.user_id) {
+      const uid = String(req.query.user_id);
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)) {
+        where.user_id = uid;
+      }
+    }
 
     const paginated = req.query.page !== undefined || req.query.limit !== undefined;
+    const staff = canSeeOrderCosts(req.user);
     const listOptions = {
       where,
-      include: orderIncludes(),
+      include: orderIncludes({ includeCost: staff }),
       order: [['createdAt', 'DESC']]
     };
 
+    const present = (order) => presentOrder(order, req.user);
+
     if (!paginated) {
-      const orders = await Order.findAll(listOptions);
-      return res.json(orders.map(withParsedExtra));
+      const orders = await Order.findAll({ ...listOptions, limit: 200 });
+      return res.json(orders.map(present));
     }
 
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
@@ -301,7 +368,7 @@ router.get('/', auth, async (req, res, next) => {
       distinct: true
     });
     return res.json({
-      data: rows.map(withParsedExtra),
+      data: rows.map(present),
       total: count,
       page,
       limit,
@@ -327,7 +394,7 @@ router.get('/track/:token', trackLimiter, async (req, res, next) => {
     }
     const order = await Order.findOne({
       where: { public_token: token },
-      include: orderIncludes()
+      include: orderIncludes({ includeCost: false })
     });
     if (!order) return res.status(404).json({ message: 'Commande introuvable' });
     res.json(toPublicOrder(order));
@@ -370,12 +437,15 @@ router.get('/inbox', auth, authorize('admin', 'seller'), async (req, res, next) 
 // Get a single order – same access rules as list
 router.get('/:id', auth, async (req, res, next) => {
   try {
-    const order = await Order.findByPk(req.params.id, { include: orderIncludes() });
+    const staff = canSeeOrderCosts(req.user);
+    const order = await Order.findByPk(req.params.id, {
+      include: orderIncludes({ includeCost: staff })
+    });
     if (!order) return res.status(404).json({ message: 'Order not found' });
     if (req.user.role === 'client' && order.user_id !== req.user.id) {
       return res.status(403).json({ message: 'Forbidden' });
     }
-    res.json(order);
+    res.json(presentOrder(order, req.user));
   } catch (err) {
     next(err);
   }

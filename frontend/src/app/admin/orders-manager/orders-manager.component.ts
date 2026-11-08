@@ -11,10 +11,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { FormatCurrencyPipe } from '../../pipes/format-currency.pipe';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
+import { BrandService } from '../../services/brand.service';
 
 const ORDER_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
@@ -29,7 +31,7 @@ const STATUS_TRANSLATIONS: { [key: string]: string } = {
 @Component({
   selector: 'app-orders-manager',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatChipsModule, MatSelectModule, MatFormFieldModule, MatInputModule, MatSnackBarModule, MatTooltipModule, FormsModule, FormatCurrencyPipe, PaginationComponent],
+    imports: [CommonModule, RouterLink, MatTableModule, MatButtonModule, MatIconModule, MatChipsModule, MatSelectModule, MatFormFieldModule, MatInputModule, MatSnackBarModule, MatTooltipModule, FormsModule, FormatCurrencyPipe, PaginationComponent],
   template: `
     <div class="manager-container fade-in">
       <div class="header">
@@ -129,6 +131,7 @@ const STATUS_TRANSLATIONS: { [key: string]: string } = {
                     <h4>Client</h4>
                     <p><strong>{{customerName(order)}}</strong></p>
                     <p>{{customerEmail(order)}}</p>
+                    <a *ngIf="order.User?.id && isAdmin" class="fiche-link" [routerLink]="['/admin/clients', order.User.id]">Voir la fiche client</a>
                   </div>
                   <div class="detail-block">
                     <h4>Livraison</h4>
@@ -169,7 +172,9 @@ const STATUS_TRANSLATIONS: { [key: string]: string } = {
                     <tr>
                       <th>Produit</th>
                       <th>Qté</th>
-                      <th>PU</th>
+                      <th>Vente</th>
+                      <th>Achat</th>
+                      <th>Marge</th>
                       <th>Sous-total</th>
                     </tr>
                   </thead>
@@ -178,15 +183,17 @@ const STATUS_TRANSLATIONS: { [key: string]: string } = {
                       <td>{{item.Product?.name || 'Produit inconnu'}}</td>
                       <td>{{item.quantity}}</td>
                       <td>{{item.unit_price | formatCurrency}}</td>
+                      <td>{{ lineCost(item) === null ? '—' : (lineCost(item) | formatCurrency) }}</td>
+                      <td>{{ lineProfit(item) === null ? '—' : (lineProfit(item) | formatCurrency) }}</td>
                       <td>{{(item.unit_price * item.quantity) | formatCurrency}}</td>
                     </tr>
                     <tr *ngIf="!order.items || order.items.length === 0">
-                      <td colspan="4" class="empty-cell">Aucun article enregistré pour cette commande.</td>
+                      <td colspan="6" class="empty-cell">Aucun article enregistré pour cette commande.</td>
                     </tr>
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td colspan="3" class="total-label">TOTAL</td>
+                      <td colspan="5" class="total-label">TOTAL</td>
                       <td class="total-value">{{order.total_amount | formatCurrency}}</td>
                     </tr>
                   </tfoot>
@@ -254,6 +261,8 @@ const STATUS_TRANSLATIONS: { [key: string]: string } = {
     .detail-panel { background: var(--luxe-offwhite); padding: 30px; border-top: 1px solid var(--luxe-border); }
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin-bottom: 30px; }
     .detail-block h4 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--luxe-text-muted); margin: 0 0 12px; font-weight: 600; }
+    .fiche-link { display: inline-block; margin-top: 8px; font-size: 0.82rem; color: var(--luxe-gold); text-decoration: none; font-weight: 600; }
+    .fiche-link:hover { text-decoration: underline; }
     .detail-block p { margin: 4px 0; font-size: 0.9rem; color: var(--luxe-charcoal); }
     .detail-block p strong { color: var(--luxe-black); font-weight: 600; }
     .status-readonly { margin-top: 0; font-weight: 600; }
@@ -296,7 +305,8 @@ export class OrdersManagerComponent implements OnInit {
     private crud: CrudService,
     private snackBar: MatSnackBar,
     private auth: AuthService,
-    private settings: SettingsService
+    private settings: SettingsService,
+    private brand: BrandService
   ) {}
 
   get canUpdateStatus(): boolean {
@@ -305,6 +315,10 @@ export class OrdersManagerComponent implements OnInit {
 
   get canCancel(): boolean {
     return this.auth.hasPermission('orders.cancel');
+  }
+
+  get isAdmin(): boolean {
+    return this.auth.isAdmin;
   }
 
   get editableStatuses(): string[] {
@@ -409,6 +423,26 @@ export class OrdersManagerComponent implements OnInit {
     });
   }
 
+  lineCost(item: any): number | null {
+    const snap = item?.unit_cost;
+    if (snap !== null && snap !== undefined && snap !== '') {
+      const n = Number(snap);
+      return Number.isFinite(n) ? n : null;
+    }
+    const product = item?.Product || item?.product;
+    if (product?.cost_price !== null && product?.cost_price !== undefined && product?.cost_price !== '') {
+      const n = Number(product.cost_price);
+      return Number.isFinite(n) ? n : null;
+    }
+    return null;
+  }
+
+  lineProfit(item: any): number | null {
+    const cost = this.lineCost(item);
+    if (cost === null) return null;
+    return (Number(item.unit_price) - cost) * Number(item.quantity || 0);
+  }
+
   cancelOrder(order: any) {
     if (order.status === 'cancelled') return;
     if (!confirm(`Annuler la commande #${String(order.id).slice(0, 8)} ? Le stock sera remis en rayon.`)) return;
@@ -450,7 +484,7 @@ export class OrdersManagerComponent implements OnInit {
       `Votre commande ${ref} est actuellement : ${this.translateStatus(order.status)}.`,
       `Total : ${total} ${symbol}.${tracking}`,
       '',
-      'Carstyle'
+      this.brand.name
     ].join('\n');
 
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');

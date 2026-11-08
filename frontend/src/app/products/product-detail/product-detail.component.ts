@@ -6,7 +6,7 @@ import { CartService } from '../../services/cart.service';
 import { WishlistService } from '../../services/wishlist.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { ImageUrlPipe } from '../../pipes/image-url.pipe';
@@ -14,58 +14,9 @@ import { FormatCurrencyPipe } from '../../pipes/format-currency.pipe';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 import { SettingsService } from '../../services/settings.service';
-
-const REVIEWS = [
-  { name: 'Amine K.', role: 'Client vérifié', text: 'Commande rapide, accessoire conforme. L’équipe Carstyle au Bardo a même conseillé la pose. Je recommande.', date: 'Il y a 2 semaines' },
-  { name: 'Rania M.', role: 'Cliente vérifiée', text: 'Très bon rapport qualité-prix. Livraison à Tunis en 48h, paiement à la livraison sans souci.', date: 'Il y a 1 mois' },
-  { name: 'Firas T.', role: 'Client vérifié', text: 'J’ai pris le pack detailing après un covering. Produits efficaces, et le suivi WhatsApp est top.', date: 'Il y a 2 mois' }
-];
-
-@Component({
-  selector: 'app-review-dialog',
-  standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, FormsModule],
-  template: `
-    <h2 mat-dialog-title class="rv-title">Laisser un avis</h2>
-    <mat-dialog-content>
-      <p class="rv-product">{{ productName }}</p>
-      <div class="rv-stars">
-        <button *ngFor="let s of [1,2,3,4,5]" class="rv-star" [class.active]="rating >= s" (click)="rating = s" [attr.aria-label]="'Note de ' + s + ' étoiles'">
-          <mat-icon>star</mat-icon>
-        </button>
-      </div>
-      <textarea class="rv-text" [(ngModel)]="comment" rows="4" placeholder="Partagez votre expérience avec ce produit..." aria-label="Votre commentaire"></textarea>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Annuler</button>
-      <button mat-flat-button color="primary" [disabled]="rating === 0 || !comment.trim()" (click)="submit()">Publier l'avis</button>
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    .rv-title { font-family: var(--font-heading); color: var(--luxe-black); text-align: center; margin-bottom: 6px; }
-    .rv-product { text-align: center; color: var(--luxe-text-muted); margin: 0 0 20px; }
-    .rv-stars { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
-    .rv-star { background: none; border: none; cursor: pointer; color: var(--luxe-border); padding: 0; transition: transform 0.2s ease; }
-    .rv-star mat-icon { font-size: 34px; width: 34px; height: 34px; }
-    .rv-star.active { color: var(--luxe-gold); }
-    .rv-star:hover { transform: scale(1.15); }
-    .rv-text { width: 100%; min-width: 360px; padding: 14px; border: 1px solid var(--luxe-border); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 0.9rem; resize: vertical; outline: none; }
-    .rv-text:focus { border-color: var(--luxe-gold); }
-    @media (max-width: 600px) { .rv-text { min-width: 100%; } }
-  `]
-})
-export class ReviewDialogComponent {
-  rating = 0;
-  comment = '';
-  productName = '';
-  constructor(
-    public dialogRef: MatDialogRef<ReviewDialogComponent>
-  ) {}
-
-  submit() {
-    this.dialogRef.close({ rating: this.rating, comment: this.comment });
-  }
-}
+import { AuthService } from '../../services/auth.service';
+import { ApiService } from '../../services/api.service';
+import { BrandService } from '../../services/brand.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -105,11 +56,11 @@ export class ReviewDialogComponent {
           <!-- INFOS -->
           <div class="info">
             <span class="info-brand" *ngIf="product.brand">{{ product.brand }}</span>
-            <span class="info-category">{{ product.category }}</span>
+            <span class="info-category">{{ product.category }}<ng-container *ngIf="product.subcategory"> · {{ product.subcategory }}</ng-container></span>
             <h1 class="info-title">{{ product.name }}</h1>
             <div class="info-rating">
-              <mat-icon *ngFor="let s of [1,2,3,4,5]">star</mat-icon>
-              <span>5.0 &middot; <button class="rating-link" (click)="scrollToReviews()">avis clients</button></span>
+              <mat-icon *ngFor="let s of [1,2,3,4,5]">{{ s <= reviewAverageRounded ? 'star' : 'star_border' }}</mat-icon>
+              <span>{{ reviewAverage }} &middot; <button class="rating-link" (click)="scrollToReviews()">{{ reviewCount }} avis</button></span>
             </div>
             <p class="info-price">
               <s *ngIf="onSale">{{ product.compare_price | formatCurrency }}</s>
@@ -144,7 +95,7 @@ export class ReviewDialogComponent {
             <div class="info-trust">
               <div class="trust-item"><mat-icon>local_shipping</mat-icon><span>Livraison<br><small>48h en Tunisie</small></span></div>
               <div class="trust-item"><mat-icon>lock</mat-icon><span>Paiement<br><small>100% sécurisé</small></span></div>
-              <div class="trust-item"><mat-icon>storefront</mat-icon><span>Retrait Bardo<br><small>Atelier Carstyle</small></span></div>
+              <div class="trust-item"><mat-icon>storefront</mat-icon><span>{{ brand.copy.trustPickupTitle }}<br><small>{{ brand.copy.trustPickupSub }}</small></span></div>
             </div>
 
             <div class="info-details">
@@ -157,8 +108,8 @@ export class ReviewDialogComponent {
                 <p>Espèces à la livraison ou carte bancaire. Vos transactions sont chiffrées et protégées.</p>
               </details>
               <details>
-                <summary><mat-icon>verified</mat-icon> Engagement Carstyle <mat-icon class="chev">expand_more</mat-icon></summary>
-                <p>Produits sélectionnés pour l'usage quotidien, conseils atelier et suivi après commande.</p>
+                <summary><mat-icon>verified</mat-icon> {{ brand.copy.engagementTitle }} <mat-icon class="chev">expand_more</mat-icon></summary>
+                <p>{{ brand.copy.engagementBody }}</p>
               </details>
             </div>
           </div>
@@ -178,23 +129,31 @@ export class ReviewDialogComponent {
               <span class="reviews-eyebrow">Avis clients</span>
               <h2>Ce qu'en pensent nos clients</h2>
               <div class="reviews-summary">
-                <span class="reviews-note">5.0</span>
-                <div class="reviews-stars"><mat-icon *ngFor="let s of [1,2,3,4,5]">star</mat-icon></div>
-                <span class="reviews-count">3 avis vérifiés</span>
+                <span class="reviews-note">{{ reviewAverage }}</span>
+                <div class="reviews-stars">
+                  <mat-icon *ngFor="let s of [1,2,3,4,5]">{{ s <= reviewAverageRounded ? 'star' : 'star_border' }}</mat-icon>
+                </div>
+                <span class="reviews-count">{{ reviewCount }} avis vérifié{{ reviewCount > 1 ? 's' : '' }}</span>
               </div>
             </div>
-            <button mat-stroked-button (click)="openReviewDialog()"><mat-icon>rate_review</mat-icon> ÉCRIRE UN AVIS</button>
+            <button mat-stroked-button *ngIf="!hasMine" (click)="openReviewDialog()"><mat-icon>rate_review</mat-icon> ÉCRIRE UN AVIS</button>
+            <span class="reviews-mine" *ngIf="hasMine">Vous avez déjà publié un avis</span>
           </div>
 
-          <div class="reviews-grid">
+          <div class="reviews-empty" *ngIf="!reviews.length">
+            <p>Aucun avis pour le moment. Connectez-vous pour partager votre expérience.</p>
+          </div>
+          <div class="reviews-grid" *ngIf="reviews.length">
             <div class="review-card" *ngFor="let r of reviews">
-              <div class="review-stars"><mat-icon *ngFor="let s of [1,2,3,4,5]">star</mat-icon></div>
-              <p class="review-text">« {{ r.text }} »</p>
+              <div class="review-stars">
+                <mat-icon *ngFor="let s of [1,2,3,4,5]">{{ s <= r.rating ? 'star' : 'star_border' }}</mat-icon>
+              </div>
+              <p class="review-text">« {{ r.comment }} »</p>
               <div class="review-author">
-                <span class="review-avatar">{{ r.name[0] }}</span>
+                <span class="review-avatar">{{ r.authorInitial }}</span>
                 <div>
-                  <strong>{{ r.name }}</strong>
-                  <span class="review-role">{{ r.role }} &middot; {{ r.date }}</span>
+                  <strong>{{ r.author }}</strong>
+                  <span class="review-role">Client vérifié · {{ r.createdAt | date:'d MMM y' }}</span>
                 </div>
               </div>
             </div>
@@ -373,6 +332,8 @@ export class ReviewDialogComponent {
     .reviews-stars, .review-stars { display: flex; gap: 3px; }
     .reviews-stars mat-icon, .review-stars mat-icon { font-size: 19px; width: 19px; height: 19px; color: var(--luxe-gold); }
     .reviews-count { color: var(--luxe-text-muted); font-size: 0.85rem; }
+    .reviews-mine { font-size: 0.82rem; color: var(--luxe-text-muted); }
+    .reviews-empty { color: var(--luxe-text-muted); font-weight: 300; padding: 10px 0 20px; }
     .reviews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
     .review-card { background: var(--luxe-white); border: 1px solid var(--luxe-border); border-radius: var(--radius-lg); padding: 30px; display: flex; flex-direction: column; gap: 18px; transition: box-shadow 0.3s ease, transform 0.3s ease; }
     .review-card:hover { box-shadow: var(--shadow-elevated); transform: translateY(-3px); }
@@ -440,17 +401,27 @@ export class ProductDetailComponent implements OnInit {
   zoomY = 50;
   lightboxOpen = false;
   loadError = false;
-  reviews = REVIEWS;
+  reviews: any[] = [];
+  reviewCount = 0;
+  reviewAverage = 0;
+  hasMine = false;
+
+  get reviewAverageRounded(): number {
+    return Math.round(this.reviewAverage || 0);
+  }
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private crud: CrudService,
+    private api: ApiService,
     private cartService: CartService,
     private wishlistService: WishlistService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private settings: SettingsService
+    private settings: SettingsService,
+    private auth: AuthService,
+    public brand: BrandService
   ) {}
 
   get pointsForProduct(): number {
@@ -464,13 +435,13 @@ export class ProductDetailComponent implements OnInit {
   }
 
   get productWhatsAppLink(): string {
-    const digits = String(this.settings.whatsapp?.number || '21653933751').replace(/\D/g, '');
+    const digits = String(this.settings.whatsapp?.number || this.brand.contact.whatsapp || '').replace(/\D/g, '');
     const symbol = this.settings.currency?.symbol || 'DT';
     const qty = this.quantity || 1;
     const price = Number(this.product?.price || 0) * qty;
     const money = `${price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`;
     const text = [
-      'Bonjour Carstyle,',
+      `Bonjour ${this.brand.name},`,
       '',
       `Je souhaite commander : ${this.product?.name || 'un produit'} × ${qty}`,
       `Montant : ${money}`,
@@ -483,6 +454,13 @@ export class ProductDetailComponent implements OnInit {
   get breadcrumbs() {
     const crumbs: any[] = [{ label: 'Boutique', url: '/collection' }];
     if (this.product?.category) crumbs.push({ label: this.product.category, url: '/collection', queryParams: { cat: this.product.category } });
+    if (this.product?.subcategory) {
+      crumbs.push({
+        label: this.product.subcategory,
+        url: '/collection',
+        queryParams: { cat: this.product.category, sub: this.product.subcategory }
+      });
+    }
     crumbs.push({ label: this.product.name });
     return crumbs;
   }
@@ -508,6 +486,7 @@ export class ProductDetailComponent implements OnInit {
         this.galleryImages = Array.isArray(data.images) && data.images.length ? data.images : [data.image_url];
         this.wishlisted = this.wishlistService.isWishlisted(String(data.id));
         this.loadRelated();
+        this.loadReviews();
       },
       error: () => { this.loadError = true; }
     });
@@ -576,16 +555,54 @@ export class ProductDetailComponent implements OnInit {
     );
   }
 
-  openReviewDialog() {
-    const ref = this.dialog.open(ReviewDialogComponent, {
-      width: '520px',
-      panelClass: 'luxury-dialog'
+  loadReviews() {
+    if (!this.product?.id) return;
+    this.api.get<any>('reviews', { product_id: this.product.id, limit: 50 }).subscribe({
+      next: page => {
+        this.reviews = page.data || [];
+        this.reviewCount = page.count || 0;
+        this.reviewAverage = page.average || 0;
+        this.hasMine = Boolean(page.mine);
+      },
+      error: () => { this.reviews = []; }
     });
-    ref.componentInstance.productName = this.product.name;
-    ref.afterClosed().subscribe(result => {
-      if (result) {
-        this.snackBar.open('Merci pour votre avis ! Il sera publié après validation.', 'Fermer', { duration: 4000 });
-      }
+  }
+
+  openReviewDialog() {
+    if (!this.auth.isLoggedIn) {
+      this.snackBar.open('Connectez-vous pour laisser un avis.', 'Connexion', { duration: 4000 })
+        .onAction().subscribe(() => {
+          this.router.navigate(['/auth/login'], { queryParams: { redirect: this.router.url } });
+        });
+      this.router.navigate(['/auth/login'], { queryParams: { redirect: this.router.url } });
+      return;
+    }
+    void import('../../components/review-dialog/review-dialog.component').then(({ ReviewDialogComponent }) => {
+      const ref = this.dialog.open(ReviewDialogComponent, {
+        width: '520px',
+        panelClass: 'luxury-dialog',
+        data: {
+          title: 'Laisser un avis',
+          subtitle: this.product.name,
+          placeholder: 'Partagez votre expérience avec ce produit…'
+        }
+      });
+      ref.afterClosed().subscribe(result => {
+        if (!result) return;
+        this.api.post('reviews', {
+          product_id: this.product.id,
+          rating: result.rating,
+          comment: result.comment
+        }).subscribe({
+          next: () => {
+            this.snackBar.open('Merci, votre avis est publié.', 'Fermer', { duration: 3500 });
+            this.loadReviews();
+          },
+          error: (err) => {
+            this.snackBar.open(err?.error?.message || 'Impossible de publier l’avis', 'Fermer', { duration: 4000 });
+          }
+        });
+      });
     });
   }
 }

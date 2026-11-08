@@ -1,9 +1,8 @@
 import { Routes } from '@angular/router';
 import { RoleGuard } from './role.guard';
-import { HomeComponent } from './home/home.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
+  { path: '', loadComponent: () => import('./home/home.component').then(m => m.HomeComponent) },
   {
     path: 'auth',
     loadChildren: () => import('./auth/auth.routes').then(m => m.AUTH_ROUTES)
@@ -41,7 +40,7 @@ export const routes: Routes = [
     path: 'admin',
     loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES),
     canActivate: [RoleGuard],
-    data: { roles: ['admin', 'seller'] }
+    data: { roles: ['admin', 'seller'], permission: 'admin.access' }
   },
   { path: '**', loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent) }
 ];

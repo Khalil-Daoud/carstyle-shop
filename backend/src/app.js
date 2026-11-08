@@ -29,24 +29,50 @@ const allowedOrigins = (process.env.ALLOWED_ORIGIN || 'http://localhost:4200')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-      return callback(null, true);
-    }
-    return callback(new Error('Origine CORS refusée'));
-  },
-  credentials: true
-}));
+function isAllowedOrigin(origin, req) {
+  if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+    return true;
+  }
+  // Même hôte que la requête (ngrok / reverse proxy) : le navigateur envoie
+  // Origin même pour un appel same-origin vers /api.
+  try {
+    const incoming = new URL(origin);
+    const host = req.get('host');
+    return Boolean(host && incoming.host === host);
+  } catch {
+    return false;
+  }
+}
+
+app.use((req, res, next) => {
+  cors({
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin, req)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Origine CORS refusée'));
+    },
+    credentials: true
+  })(req, res, next);
+});
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 180,
+  skip: (req) => req.path === '/health' || req.originalUrl === '/api/health',
+  message: { message: 'Trop de requêtes, réessayez dans une minute.' }
+});
+app.use('/api', apiLimiter);
 
 // Images : d’abord le dossier persistant (volume Railway), puis les visuels du dépôt.
 const { repoImgDir, persistentImgDir, ensureImgDirs } = require('./config/imgPaths');
 ensureImgDirs();
-app.use('/img', express.static(persistentImgDir));
+const imgStatic = { maxAge: '7d', etag: true, lastModified: true };
+app.use('/img', express.static(persistentImgDir, imgStatic));
 if (persistentImgDir !== repoImgDir) {
-  app.use('/img', express.static(repoImgDir));
+  app.use('/img', express.static(repoImgDir, imgStatic));
 }
 
 // Upload d'images (produits) – admin & employés
@@ -63,10 +89,13 @@ app.use('/api/products', require('./routes/stock'));
 // Routes Dynamiques
 app.use('/api/products', createDynamicRouter('Product'));
 app.use('/api/categories', createDynamicRouter('Category'));
+app.use('/api/users', require('./routes/userFiche'));
 app.use('/api/users', createDynamicRouter('User'));
 
 // [SEC-FIX] Route commandes dédiée (calcul serveur du total, items, accès client)
 app.use('/api/orders', require('./routes/orders'));
+app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/audit', require('./routes/audit'));
 
 // Paramètres boutique (devise)
 app.use('/api/settings', require('./routes/settings'));
@@ -91,25 +120,25 @@ app.get('/', (req, res) => {
 });
 
 // Health check endpoint pour le monitoring
+let lastDbOkAt = 0;
 app.get('/api/health', async (req, res) => {
   try {
-    // Vérifier la connexion à la base de données
     const sequelize = require('./config/database');
-    await sequelize.authenticate();
-    
+    if (Date.now() - lastDbOkAt > 10000) {
+      await sequelize.authenticate();
+      lastDbOkAt = Date.now();
+    }
     res.status(200).json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      database: 'connected',
-      environment: process.env.NODE_ENV || 'development'
+      database: 'connected'
     });
-  } catch (error) {
+  } catch {
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      database: 'disconnected',
-      error: error.message
+      database: 'disconnected'
     });
   }
 });

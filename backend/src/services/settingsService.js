@@ -1,5 +1,6 @@
 const Setting = require('../models/Setting');
 const loyaltyService = require('./loyaltyService');
+const client = require('../config/client');
 
 const CURRENCIES = {
   EUR: { code: 'EUR', symbol: '€', label: 'Euro' },
@@ -8,7 +9,7 @@ const CURRENCIES = {
 };
 
 // Numéro affiché dans le pied de page et la page contact du site.
-const DEFAULT_WHATSAPP_NUMBER = '21653933751';
+const DEFAULT_WHATSAPP_NUMBER = client.contact?.whatsapp || '';
 
 async function getCurrency() {
   const setting = await Setting.findByPk('currency');
@@ -220,10 +221,10 @@ async function isCustomerProviderConfigured() {
 }
 
 const DEFAULT_HERO = {
-  type: 'video',
-  videoUrl: 'assets/vids/hero-720.mp4',
-  imageUrl: 'assets/vids/hero-poster.webp',
-  posterUrl: 'assets/vids/hero-poster.webp'
+  type: client.hero?.type === 'image' ? 'image' : 'video',
+  videoUrl: client.hero?.videoUrl || 'assets/vids/hero-720.mp4',
+  imageUrl: client.hero?.imageUrl || 'assets/vids/hero-poster.webp',
+  posterUrl: client.hero?.posterUrl || 'assets/vids/hero-poster.webp'
 };
 
 function isSafeMediaUrl(raw) {
@@ -235,6 +236,110 @@ function isSafeMediaUrl(raw) {
   return '';
 }
 
+function clip(value, max) {
+  return String(value == null ? '' : value).trim().slice(0, max);
+}
+
+function hexColor(value, fallback) {
+  const raw = String(value || '').trim();
+  if (/^#([0-9A-Fa-f]{6})$/.test(raw)) return raw;
+  if (/^#([0-9A-Fa-f]{3})$/.test(raw)) {
+    return `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`;
+  }
+  return fallback;
+}
+
+function httpUrl(value) {
+  const raw = clip(value, 400);
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return parsed.toString();
+  } catch {
+    return '';
+  }
+  return '';
+}
+
+function normalizeIdentity(input, defaults = client) {
+  const src = input && typeof input === 'object' ? input : {};
+  const base = defaults && typeof defaults === 'object' ? defaults : {};
+  const brandIn = { ...(base.brand || {}), ...(src.brand || {}) };
+  const colorsIn = { ...(base.colors || {}), ...(src.colors || {}) };
+  const contactIn = { ...(base.contact || {}), ...(src.contact || {}) };
+  const socialIn = { ...(base.social || {}), ...(src.social || {}) };
+  const copyIn = { ...(base.copy || {}), ...(src.copy || {}) };
+
+  const copy = {};
+  for (const [key, val] of Object.entries(copyIn)) {
+    if (key === 'atelierBullets') continue;
+    if (typeof val === 'string') {
+      copy[key] = clip(val, /body|description|intro|seo/i.test(key) ? 800 : 200);
+    }
+  }
+  copy.atelierBullets = Array.isArray(copyIn.atelierBullets)
+    ? copyIn.atelierBullets.map((item) => clip(item, 120)).filter(Boolean).slice(0, 8)
+    : [];
+  copy.atelierImage = isSafeMediaUrl(copy.atelierImage) || 'assets/covering.webp';
+
+  return {
+    slug: clip(base.slug || 'shopkit', 40),
+    brand: {
+      name: clip(brandIn.name, 80) || 'Boutique',
+      nameStart: clip(brandIn.nameStart, 40),
+      nameAccent: clip(brandIn.nameAccent, 40),
+      legalName: clip(brandIn.legalName, 80),
+      logo: isSafeMediaUrl(brandIn.logo) || 'assets/logo.webp'
+    },
+    colors: {
+      primary: hexColor(colorsIn.primary, '#D90429'),
+      primaryHover: hexColor(colorsIn.primaryHover, '#b00321'),
+      secondary: hexColor(colorsIn.secondary, '#0a0a0a')
+    },
+    contact: {
+      email: clip(contactIn.email, 120),
+      emailOrders: clip(contactIn.emailOrders, 120),
+      phoneDisplay: clip(contactIn.phoneDisplay, 40),
+      whatsapp: String(contactIn.whatsapp || '').replace(/\D/g, '').slice(0, 20),
+      whatsappLabel: clip(contactIn.whatsappLabel, 40),
+      hours: clip(contactIn.hours, 80),
+      addressLine1: clip(contactIn.addressLine1, 120),
+      addressLine2: clip(contactIn.addressLine2, 120),
+      city: clip(contactIn.city, 80),
+      country: clip(contactIn.country, 80)
+    },
+    social: {
+      facebook: httpUrl(socialIn.facebook),
+      instagram: httpUrl(socialIn.instagram)
+    },
+    copy
+  };
+}
+
+async function getIdentity() {
+  const row = await Setting.findByPk('identity');
+  if (!row?.value) return normalizeIdentity(client, client);
+  try {
+    return normalizeIdentity(JSON.parse(row.value), client);
+  } catch {
+    return normalizeIdentity(client, client);
+  }
+}
+
+async function setIdentity(raw) {
+  const current = await getIdentity();
+  const next = normalizeIdentity(raw, current);
+  await Setting.upsert({ key: 'identity', value: JSON.stringify(next) });
+  if (next.contact.whatsapp) {
+    try {
+      await setWhatsAppNumber(next.contact.whatsapp);
+    } catch {
+      // L'identité est enregistrée même si le numéro WhatsApp est incomplet.
+    }
+  }
+  return getIdentity();
+}
+
 async function getHero() {
   const [typeRow, videoRow, imageRow, posterRow] = await Promise.all([
     Setting.findByPk('hero_type'),
@@ -242,7 +347,7 @@ async function getHero() {
     Setting.findByPk('hero_image_url'),
     Setting.findByPk('hero_poster_url')
   ]);
-  const type = typeRow?.value === 'image' ? 'image' : 'video';
+  const type = typeRow?.value === 'image' || typeRow?.value === 'video' ? typeRow.value : DEFAULT_HERO.type;
   return {
     type,
     videoUrl: isSafeMediaUrl(videoRow?.value) || DEFAULT_HERO.videoUrl,
@@ -270,7 +375,7 @@ async function setHero({ type, videoUrl, imageUrl, posterUrl } = {}) {
 
 // Réponse publique : aucun secret, uniquement ce dont la boutique a besoin côté navigateur.
 async function getPublicSettings() {
-  const [currency, guestCheckout, whatsappNumber, notifyCustomer, whatsappInvite, loyaltyTiers, providerReady, checkoutFields, hero] = await Promise.all([
+  const [currency, guestCheckout, whatsappNumber, notifyCustomer, whatsappInvite, loyaltyTiers, providerReady, checkoutFields, hero, identity] = await Promise.all([
     getCurrency(),
     getGuestCheckout(),
     getWhatsAppNumber(),
@@ -279,13 +384,15 @@ async function getPublicSettings() {
     getLoyaltyTiers(),
     isCustomerProviderConfigured(),
     getCheckoutFields(),
-    getHero()
+    getHero(),
+    getIdentity()
   ]);
 
   return {
     currency,
     guestCheckout,
     checkoutFields,
+    identity,
     hero,
     loyalty: { tiers: loyaltyTiers },
     whatsapp: {
@@ -323,6 +430,8 @@ module.exports = {
   normalizeWhatsAppNumber,
   getHero,
   setHero,
+  getIdentity,
+  setIdentity,
   getPublicSettings,
   CURRENCIES,
   BUILTIN_CHECKOUT_FIELDS,

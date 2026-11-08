@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, ViewportScroller } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { BrandService } from './services/brand.service';
 
 // Sections avec leur propre layout complet (sidebar admin, écrans d'auth plein écran...)
 // Elles ne doivent pas hériter du header/footer de la boutique publique.
@@ -19,7 +21,7 @@ const STANDALONE_LAYOUT_PREFIXES = ['/admin', '/auth'];
       <router-outlet></router-outlet>
     </main>
     <app-footer *ngIf="showShopChrome"></app-footer>
-    <a *ngIf="showShopChrome" class="wa-float" href="https://wa.me/21653933751" target="_blank" rel="noopener" aria-label="WhatsApp Carstyle">
+    <a *ngIf="showShopChrome && brand.contact.whatsapp" class="wa-float" [href]="brand.whatsappUrl" target="_blank" rel="noopener" [attr.aria-label]="'WhatsApp ' + brand.name">
       <span>WhatsApp</span>
     </a>
   `,
@@ -39,12 +41,16 @@ const STANDALONE_LAYOUT_PREFIXES = ['/admin', '/auth'];
   `]
 })
 export class AppComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   showShopChrome = true;
 
-  constructor(private router: Router, private viewport: ViewportScroller) {}
+  constructor(private router: Router, private viewport: ViewportScroller, public brand: BrandService) {}
 
   ngOnInit() {
-    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e) => {
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((e) => {
       const url = (e as NavigationEnd).urlAfterRedirects;
       this.showShopChrome = !STANDALONE_LAYOUT_PREFIXES.some(prefix => url.startsWith(prefix));
       this.scrollToTop();

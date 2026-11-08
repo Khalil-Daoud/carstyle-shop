@@ -5,10 +5,14 @@ const Category = require('./Category');
 const Order = require('./Order');
 const OrderItem = require('./OrderItem');
 const Setting = require('./Setting');
+const Review = require('./Review');
+const AuditLog = require('./AuditLog');
 
 // Relations Catégorie ↔ Produit
 Category.hasMany(Product, { foreignKey: 'category_id' });
 Product.belongsTo(Category, { foreignKey: 'category_id' });
+Category.belongsTo(Category, { as: 'parent', foreignKey: 'parent_id' });
+Category.hasMany(Category, { as: 'children', foreignKey: 'parent_id' });
 
 // [BUG-006 FIX] Relations User ↔ Order ↔ OrderItem
 User.hasMany(Order, { foreignKey: 'user_id' });
@@ -20,6 +24,11 @@ OrderItem.belongsTo(Order, { foreignKey: 'order_id' });
 OrderItem.belongsTo(Product, { foreignKey: 'product_id' });
 Product.hasMany(OrderItem, { foreignKey: 'product_id' });
 
+User.hasMany(Review, { foreignKey: 'user_id' });
+Review.belongsTo(User, { foreignKey: 'user_id' });
+Product.hasMany(Review, { foreignKey: 'product_id' });
+Review.belongsTo(Product, { foreignKey: 'product_id' });
+
 const models = {
   User,
   Product,
@@ -27,6 +36,8 @@ const models = {
   Order,
   OrderItem,
   Setting,
+  Review,
+  AuditLog,
   sequelize
 };
 

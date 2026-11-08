@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
+import { BrandService } from '../../services/brand.service';
 
 @Component({
   selector: 'app-contact',
@@ -22,8 +23,8 @@ import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 
         <div class="contact-head">
           <span class="contact-eyebrow">Nous sommes à votre écoute</span>
-          <h1>Contactez Carstyle</h1>
-          <p>Une question sur un accessoire, votre commande ou un conseil entretien ? Notre équipe au Bardo vous répond sous 24h ouvrées.</p>
+          <h1>{{ brand.copy.contactTitle }}</h1>
+          <p>{{ brand.copy.contactIntro }}</p>
         </div>
 
         <div class="contact-grid">
@@ -32,28 +33,32 @@ import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
               <mat-icon>mail_outline</mat-icon>
               <div>
                 <strong>E-mail</strong>
-                <p>contact&#64;carstyle.tn</p>
-                <p>commandes&#64;carstyle.tn</p>
+                <p>{{ brand.contact.email }}</p>
+                <p *ngIf="brand.contact.emailOrders">{{ brand.contact.emailOrders }}</p>
               </div>
             </div>
             <div class="contact-card">
               <mat-icon>phone_in_talk</mat-icon>
               <div>
                 <strong>Téléphone</strong>
-                <p>+216 53 933 751</p>
-                <p>Du lundi au samedi, 9h &ndash; 18h</p>
+                <p>{{ brand.contact.phoneDisplay }}</p>
+                <p>{{ brand.contact.hours }}</p>
               </div>
             </div>
             <div class="contact-card">
               <mat-icon>location_on</mat-icon>
               <div>
                 <strong>Atelier</strong>
-                <p>Avenue Bayrem Ettounsi<br>Le Bardo 2000, Tunisie</p>
+                <p>{{ brand.contact.addressLine1 }}<br>{{ brand.contact.addressLine2 }}</p>
               </div>
             </div>
             <div class="contact-socials">
-              <a href="https://www.facebook.com/profile.php?id=100082205727145" target="_blank" rel="noopener" aria-label="Facebook"><mat-icon>facebook</mat-icon></a>
-              <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener" aria-label="Instagram"><mat-icon>instagram</mat-icon></a>
+              <a *ngIf="brand.social.facebook" [href]="brand.social.facebook" target="_blank" rel="noopener" aria-label="Facebook"><mat-icon>facebook</mat-icon></a>
+              <a *ngIf="brand.social.instagram" [href]="brand.social.instagram" target="_blank" rel="noopener" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zm5.25-3.25a1.1 1.1 0 1 1-1.1 1.1 1.1 1.1 0 0 1 1.1-1.1z"/>
+                </svg>
+              </a>
             </div>
           </div>
 
@@ -112,10 +117,11 @@ import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
     .contact-socials { display: flex; gap: 14px; margin-top: 28px; }
     .contact-socials a {
       width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--luxe-border);
-      display: flex; align-items: center; justify-content: center; color: var(--luxe-charcoal);
+      display: grid; place-items: center; color: var(--luxe-charcoal);
       transition: all 0.3s ease;
     }
-    .contact-socials a mat-icon { font-size: 20px; width: 20px; height: 20px; }
+    .contact-socials a mat-icon { font-size: 20px; width: 20px; height: 20px; line-height: 20px; display: block; }
+    .contact-socials a svg { display: block; }
     .contact-socials a:hover { background: var(--luxe-gold); border-color: var(--luxe-gold); color: var(--luxe-black); transform: translateY(-3px); }
 
     .contact-form { background: var(--luxe-white); border: 1px solid var(--luxe-border); border-radius: var(--radius-lg); padding: 40px; box-shadow: var(--shadow-sm); }
@@ -134,7 +140,7 @@ import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
   `]
 })
 export class ContactComponent {
-  constructor(private snackBar: MatSnackBar) {}
+  constructor(private snackBar: MatSnackBar, public brand: BrandService) {}
 
   send(data: any) {
     this.snackBar.open('Merci pour votre message ! Nous vous répondrons sous 24h ouvrées.', 'Fermer', { duration: 4500 });

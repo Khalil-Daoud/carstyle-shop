@@ -52,7 +52,7 @@ interface StockSummary {
       <div class="page-head">
         <div>
           <h2>Produits</h2>
-          <p>Fiches, photos et prix. Le stock se règle à part, sans ouvrir chaque fiche.</p>
+          <p>{{ showForm ? 'Même écran pour ajouter ou modifier. Parcourez les sections, puis enregistrez.' : 'Fiches, photos et prix. Le stock se règle à part, sans ouvrir chaque fiche.' }}</p>
         </div>
         <div class="header-actions">
           <a mat-stroked-button routerLink="/admin/stock" *ngIf="!showForm">
@@ -97,7 +97,7 @@ interface StockSummary {
           <p class="import-help">
             Colonnes :
             <code>Ref</code>, <code>Catégorie</code>, <code>Désignation</code>,
-            <code>Contenance</code>, <code>Prix</code>, <code>Image</code>
+            <code>Contenance</code>, <code>Prix</code>, <code>PrixAchat</code>, <code>Image</code>
             (<code>Stock</code> et <code>Description</code> facultatives).
             CSV, Excel (<code>.xlsx</code>) ou ZIP. Première feuille du classeur.
           </p>
@@ -149,89 +149,145 @@ interface StockSummary {
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="form-card" *ngIf="showForm">
-        <mat-card-header>
-          <mat-card-title>{{ isEditMode ? 'Modifier le produit' : 'Nouveau produit' }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+      <form class="editor" *ngIf="showForm" [formGroup]="productForm" (ngSubmit)="saveProduct()">
+        <aside class="editor-nav">
+          <button type="button" *ngFor="let s of editorSections" class="editor-nav-item"
+            [class.on]="editorSection === s.id" (click)="goSection(s.id)">
+            <mat-icon>{{ s.icon }}</mat-icon>
+            <span>{{ s.label }}</span>
+            <i class="nav-dot" *ngIf="sectionHint(s.id)"></i>
+          </button>
+        </aside>
+
+        <div class="editor-main">
+          <header class="editor-bar">
+            <div>
+              <strong>{{ isEditMode ? 'Modifier le produit' : 'Nouveau produit' }}</strong>
+              <span>{{ productForm.get('name')?.value || 'Sans nom pour l’instant' }}</span>
+            </div>
+          </header>
+
+          <section id="sec-general" class="editor-card">
+            <div class="editor-card-head">
+              <span class="editor-ico"><mat-icon>inventory_2</mat-icon></span>
+              <div>
+                <h3>Informations générales</h3>
+                <p>Nom, classement et texte visible sur la fiche boutique.</p>
+              </div>
+            </div>
             <div class="form-grid">
               <mat-form-field appearance="outline">
-                <mat-label>Référence</mat-label>
-                <input matInput formControlName="reference" placeholder="ex: NEL-001">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
                 <mat-label>Nom du produit</mat-label>
-                <input matInput formControlName="name" placeholder="ex: Crème de Nuit">
+                <input matInput formControlName="name" placeholder="ex: Support téléphone magnétique">
+                <mat-hint>Obligatoire · affiché partout</mat-hint>
               </mat-form-field>
-
               <mat-form-field appearance="outline">
-                <mat-label>Contenance</mat-label>
-                <input matInput formControlName="contenance" placeholder="ex: 50 ml">
+                <mat-label>Référence</mat-label>
+                <input matInput formControlName="reference" placeholder="ex: CS-INT-001">
+                <mat-hint>Facultatif · code interne</mat-hint>
               </mat-form-field>
-
               <mat-form-field appearance="outline">
                 <mat-label>Catégorie</mat-label>
-                <mat-select formControlName="category">
-                  <mat-option *ngFor="let c of categories" [value]="c.name">{{ c.name }}</mat-option>
+                <mat-select formControlName="category" (selectionChange)="onParentCategoryChange()">
+                  <mat-option *ngFor="let c of parentCategories" [value]="c.name">{{ c.name }}</mat-option>
                 </mat-select>
-                <mat-hint *ngIf="categories.length === 0">
-                  Aucune catégorie — <a routerLink="/admin/categories">créez-en une</a>
-                </mat-hint>
+                <mat-hint *ngIf="categories.length === 0">Aucune catégorie — <a routerLink="/admin/categories">créez-en une</a></mat-hint>
               </mat-form-field>
-
+              <mat-form-field appearance="outline" *ngIf="subsForSelectedParent().length">
+                <mat-label>Sous-catégorie</mat-label>
+                <mat-select formControlName="subcategory">
+                  <mat-option [value]="''">Aucune</mat-option>
+                  <mat-option *ngFor="let s of subsForSelectedParent()" [value]="s.name">{{ s.name }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Contenance</mat-label>
+                <input matInput formControlName="contenance" placeholder="ex: 50 ml, 1 L, universel">
+                <mat-hint>Facultatif · volume ou format</mat-hint>
+              </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Marque</mat-label>
                 <input matInput formControlName="brand" placeholder="ex: Carstyle">
               </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Prix</mat-label>
-                <input matInput type="number" formControlName="price" placeholder="ex: 25.00">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Ancien prix (promo)</mat-label>
-                <input matInput type="number" formControlName="compare_price" placeholder="ex: 35.00">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Stock</mat-label>
-                <input matInput type="number" formControlName="stock" placeholder="ex: 50">
-              </mat-form-field>
             </div>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" rows="4" placeholder="Décrivez le produit, son usage, les points forts…"></textarea>
+            </mat-form-field>
+          </section>
 
-            <div class="image-field full-width">
-              <span class="image-label">Image du produit</span>
-              <div class="image-actions">
+          <section id="sec-media" class="editor-card">
+            <div class="editor-card-head">
+              <span class="editor-ico"><mat-icon>photo_library</mat-icon></span>
+              <div>
+                <h3>Images et médias</h3>
+                <p>Photo principale de la fiche. Vous pouvez envoyer un fichier ou coller une URL.</p>
+              </div>
+            </div>
+            <div class="media-row">
+              <div class="media-preview" [class.empty]="!imagePreview && !imageValue">
+                <img *ngIf="!uploading && (imagePreview || imageValue)" [src]="(imagePreview || imageValue) | imageUrl" alt="Aperçu du produit">
+                <mat-spinner *ngIf="uploading" diameter="28"></mat-spinner>
+                <span *ngIf="!uploading && !imagePreview && !imageValue">Aucune photo</span>
+              </div>
+              <div class="media-actions">
                 <input type="file" hidden #fileInput accept="image/*" (change)="onFileSelected($event)">
                 <button type="button" mat-stroked-button color="primary" [disabled]="uploading" (click)="fileInput.click()">
                   <mat-icon>upload</mat-icon>
-                  {{ uploading ? 'Envoi en cours…' : 'Choisir une image' }}
+                  {{ uploading ? 'Envoi en cours…' : (imagePreview || imageValue ? 'Remplacer la photo' : 'Choisir une photo') }}
                 </button>
-                <mat-spinner *ngIf="uploading" diameter="20"></mat-spinner>
-                <img *ngIf="!uploading && imagePreview" [src]="imagePreview | imageUrl" class="image-preview" alt="Aperçu">
+                <p class="tiers-hint">JPG ou PNG. Cette image est obligatoire.</p>
               </div>
-              <mat-form-field appearance="outline" class="full-width" style="margin-top: 10px;">
-                <mat-label>URL de l'image</mat-label>
+            </div>
+            <details class="url-adv">
+              <summary>Coller une URL d’image</summary>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>URL de l’image</mat-label>
                 <input matInput formControlName="image_url" placeholder="/img/… ou https://…">
               </mat-form-field>
-            </div>
+            </details>
+          </section>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Description</mat-label>
-              <textarea matInput formControlName="description" rows="4"></textarea>
-            </mat-form-field>
-
-            <div class="form-actions">
-              <button mat-flat-button color="primary" type="submit" [disabled]="productForm.invalid">
-                <mat-icon>save</mat-icon> Enregistrer
-              </button>
+          <section id="sec-pricing" class="editor-card">
+            <div class="editor-card-head">
+              <span class="editor-ico"><mat-icon>payments</mat-icon></span>
+              <div>
+                <h3>Prix et stock</h3>
+                <p>Prix boutique, marge interne et quantité disponible.</p>
+              </div>
             </div>
-          </form>
-        </mat-card-content>
-      </mat-card>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Prix de vente</mat-label>
+                <input matInput type="number" formControlName="price" placeholder="ex: 25.00">
+                <mat-hint>Obligatoire · visible en boutique</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Prix d’achat</mat-label>
+                <input matInput type="number" formControlName="cost_price" placeholder="ex: 15.00">
+                <mat-hint>Invisible en boutique · sert à la marge</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Ancien prix (promo)</mat-label>
+                <input matInput type="number" formControlName="compare_price" placeholder="ex: 35.00">
+                <mat-hint>Affiché barré s’il est plus élevé</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Stock</mat-label>
+                <input matInput type="number" formControlName="stock" placeholder="ex: 50">
+                <mat-hint>0 = rupture</mat-hint>
+              </mat-form-field>
+            </div>
+          </section>
+
+        </div>
+        <div class="save-bar">
+          <button mat-flat-button color="primary" type="submit" [disabled]="productForm.invalid">
+            Enregistrer le produit
+          </button>
+          <button type="button" mat-stroked-button (click)="toggleForm()">Annuler</button>
+        </div>
+      </form>
 
       <div class="table-wrap" *ngIf="!showForm">
         <div class="toolbar">
@@ -244,7 +300,10 @@ interface StockSummary {
             <mat-label>Catégorie</mat-label>
             <mat-select [(ngModel)]="categoryFilter" (ngModelChange)="resetPage()">
               <mat-option value="all">Toutes</mat-option>
-              <mat-option *ngFor="let c of categories" [value]="c.name">{{ c.name }}</mat-option>
+              <ng-container *ngFor="let c of parentCategories">
+                <mat-option [value]="c.name">{{ c.name }}</mat-option>
+                <mat-option *ngFor="let s of childrenOfParent(c.id)" [value]="'sub:' + s.name"> — {{ s.name }}</mat-option>
+              </ng-container>
             </mat-select>
           </mat-form-field>
           <span class="result-count">{{ total }} produit{{ total > 1 ? 's' : '' }}</span>
@@ -254,7 +313,7 @@ interface StockSummary {
           <div class="row head">
             <span></span>
             <span>Produit</span>
-            <span>Prix</span>
+            <span>Vente / achat</span>
             <span>Stock</span>
             <span></span>
           </div>
@@ -262,9 +321,13 @@ interface StockSummary {
             <img [src]="p.image_url | imageUrl" [alt]="p.name" class="thumb">
             <div class="meta">
               <strong>{{ p.name }}</strong>
-              <span>{{ p.reference || 'Sans réf.' }} · {{ p.category || '—' }}<ng-container *ngIf="p.contenance"> · {{ p.contenance }}</ng-container></span>
+              <span>{{ p.reference || 'Sans réf.' }} · {{ p.category || '—' }}<ng-container *ngIf="p.subcategory"> · {{ p.subcategory }}</ng-container><ng-container *ngIf="p.contenance"> · {{ p.contenance }}</ng-container></span>
             </div>
-            <span class="price">{{ p.price | formatCurrency }}</span>
+            <span class="price">
+              {{ p.price | formatCurrency }}
+              <small *ngIf="hasCost(p)">achat {{ p.cost_price | formatCurrency }} · {{ marginLabel(p) }}</small>
+              <small *ngIf="!hasCost(p)" class="muted">achat non renseigné</small>
+            </span>
             <span class="badge" [ngClass]="statusClass(p.stock)">{{ statusLabel(p.stock) }} · {{ p.stock }}</span>
             <div class="row-actions">
               <button type="button" mat-icon-button color="primary" matTooltip="Modifier" (click)="editProduct(p)">
@@ -307,13 +370,54 @@ interface StockSummary {
     .kpi.warn .kpi-value { color: #b54708; }
 
     .form-card { border-radius: 16px; padding: 12px 8px 8px; margin-bottom: 22px; }
+    .editor { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 20px; align-items: start; margin-bottom: 28px; }
+    .editor > .save-bar { grid-column: 1 / -1; }
+    .editor-nav {
+      position: sticky; top: 16px; display: flex; flex-direction: column; gap: 4px;
+      background: var(--luxe-white); border: 1px solid var(--luxe-border); border-radius: 16px; padding: 10px;
+    }
+    .editor-nav-item {
+      display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 8px;
+      border: 0; background: transparent; text-align: left; padding: 10px 12px; border-radius: 10px;
+      cursor: pointer; color: var(--luxe-charcoal); font-size: 0.88rem; font-family: inherit;
+    }
+    .editor-nav-item mat-icon { font-size: 20px; width: 20px; height: 20px; color: var(--luxe-gold); }
+    .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--luxe-gold); display: inline-block; }
+    .editor-nav-item.on { background: var(--luxe-gold-soft); color: var(--luxe-black); font-weight: 600; }
+    .editor-bar { padding: 4px 2px 14px; }
+    .editor-bar strong { display: block; font-size: 1.05rem; }
+    .editor-bar span { color: var(--luxe-text-muted); font-size: 0.82rem; }
+    .editor-card {
+      background: var(--luxe-white); border: 1px solid var(--luxe-border); border-radius: 16px;
+      padding: 22px 22px 12px; margin-bottom: 16px; scroll-margin-top: 76px;
+    }
+    .editor-card-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 18px; }
+    .editor-card-head h3 { margin: 0 0 4px; font-size: 1.05rem; font-weight: 600; }
+    .editor-card-head p { margin: 0; color: var(--luxe-text-muted); font-size: 0.84rem; }
+    .editor-ico {
+      width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0;
+      background: var(--luxe-gold-soft); color: var(--luxe-gold-hover);
+    }
+    .editor-ico mat-icon { font-size: 22px; width: 22px; height: 22px; }
+    .media-row { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .media-preview {
+      width: 132px; height: 132px; border-radius: 14px; overflow: hidden; flex-shrink: 0;
+      border: 1px solid var(--luxe-border); background: var(--luxe-offwhite);
+      display: grid; place-items: center; color: var(--luxe-text-muted); font-size: 0.78rem;
+    }
+    .media-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .media-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+    .tiers-hint { margin: 0; color: var(--luxe-text-muted); font-size: 0.82rem; }
+    .url-adv { margin: 4px 0 10px; }
+    .url-adv summary { cursor: pointer; color: var(--luxe-text-muted); font-size: 0.84rem; margin-bottom: 8px; }
+    @media (max-width: 900px) {
+      .editor { grid-template-columns: 1fr; }
+      .editor-nav { position: sticky; top: 0; z-index: 5; flex-direction: row; overflow-x: auto; padding: 8px; }
+      .editor-nav-item { grid-template-columns: 22px auto; white-space: nowrap; }
+      .editor-nav-item em { display: none; }
+    }
     .full-width { width: 100%; }
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
-    .form-actions { display: flex; justify-content: flex-end; margin-top: 15px; }
-    .image-field { margin-bottom: 15px; }
-    .image-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--luxe-text-muted); display: block; margin-bottom: 8px; font-weight: 600; }
-    .image-actions { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-    .image-preview { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid var(--luxe-border); }
 
     .import-help { color: var(--luxe-text-muted); font-size: 0.9rem; line-height: 1.7; }
     .import-help code, .import-rules code { background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
@@ -341,7 +445,7 @@ interface StockSummary {
     .rows { width: 100%; }
     .row {
       display: grid;
-      grid-template-columns: 52px minmax(0, 1fr) 110px 150px 88px;
+      grid-template-columns: 52px minmax(0, 1fr) 170px 150px 88px;
       gap: 14px;
       align-items: center;
       padding: 10px 18px;
@@ -361,7 +465,9 @@ interface StockSummary {
     .meta { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
     .meta strong { font-size: 0.95rem; color: var(--luxe-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .meta span { font-size: 0.78rem; color: var(--luxe-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .price { font-weight: 600; white-space: nowrap; }
+    .price { font-weight: 600; white-space: nowrap; display: flex; flex-direction: column; gap: 2px; }
+    .price small { font-weight: 500; font-size: 0.72rem; color: #2e7d32; }
+    .price small.muted { color: var(--luxe-text-muted); }
     .row-actions { display: flex; justify-content: flex-end; }
 
     .badge {
@@ -405,6 +511,36 @@ export class ProductsManagerComponent implements OnInit, OnDestroy {
   loading = true;
   searchTerm = '';
   categoryFilter = 'all';
+
+  get parentCategories(): any[] {
+    return this.categories.filter((c) => !c.parent_id);
+  }
+
+  get listCategoryFilter(): string | undefined {
+    if (this.categoryFilter === 'all' || this.categoryFilter.startsWith('sub:')) return undefined;
+    return this.categoryFilter;
+  }
+
+  get listSubcategoryFilter(): string | undefined {
+    return this.categoryFilter.startsWith('sub:') ? this.categoryFilter.slice(4) : undefined;
+  }
+
+  childrenOfParent(parentId: string): any[] {
+    return this.categories.filter((c) => c.parent_id === parentId);
+  }
+
+  subsForSelectedParent(): any[] {
+    const name = this.productForm?.get('category')?.value;
+    const parent = this.categories.find((c) => c.name === name && !c.parent_id);
+    return parent ? this.childrenOfParent(parent.id) : [];
+  }
+
+  onParentCategoryChange() {
+    const current = this.productForm.get('subcategory')?.value;
+    if (current && !this.subsForSelectedParent().some((s) => s.name === current)) {
+      this.productForm.patchValue({ subcategory: '' });
+    }
+  }
   pageIndex = 0;
   pageSize = 10;
   private lowThreshold = 10;
@@ -415,6 +551,12 @@ export class ProductsManagerComponent implements OnInit, OnDestroy {
 
   productForm!: FormGroup;
   showForm = false;
+  editorSection: 'general' | 'media' | 'pricing' = 'general';
+  readonly editorSections = [
+    { id: 'general' as const, label: 'Général', icon: 'inventory_2' },
+    { id: 'media' as const, label: 'Images', icon: 'photo_library' },
+    { id: 'pricing' as const, label: 'Prix & stock', icon: 'payments' }
+  ];
   isEditMode = false;
   editingProductId: string | null = null;
   uploading = false;
@@ -445,7 +587,8 @@ export class ProductsManagerComponent implements OnInit, OnDestroy {
           page: this.pageIndex + 1,
           limit: this.pageSize,
           search: this.searchTerm.trim() || undefined,
-          category: this.categoryFilter === 'all' ? undefined : this.categoryFilter,
+          category: this.listCategoryFilter,
+          subcategory: this.listSubcategoryFilter,
           sort: 'newest:desc'
         })),
         takeUntil(this.destroy$)
@@ -503,14 +646,28 @@ export class ProductsManagerComponent implements OnInit, OnDestroy {
     return 'En stock';
   }
 
+  hasCost(product: { cost_price?: number | string | null }): boolean {
+    return product.cost_price !== null && product.cost_price !== undefined && product.cost_price !== '';
+  }
+
+  marginLabel(product: { price?: number; cost_price?: number | string | null }): string {
+    const price = Number(product.price);
+    const cost = Number(product.cost_price);
+    if (!Number.isFinite(price) || !Number.isFinite(cost) || price <= 0) return '';
+    const pct = Math.round(((price - cost) / price) * 100);
+    return `${pct >= 0 ? '+' : ''}${pct} %`;
+  }
+
   initForm() {
     this.productForm = this.fb.group({
       reference: [''],
       contenance: [''],
       name: ['', Validators.required],
       category: ['', Validators.required],
+      subcategory: [''],
       brand: [''],
       price: ['', [Validators.required, Validators.min(0)]],
+      cost_price: [''],
       compare_price: [''],
       stock: [0, [Validators.required, Validators.min(0)]],
       image_url: ['', Validators.required],
@@ -605,9 +762,10 @@ export class ProductsManagerComponent implements OnInit, OnDestroy {
 
   downloadTemplate() {
     const rows = [
-      'Ref;Categorie;Designation;Contenance;Prix;Image;Stock',
-      'NEL-001;Soins Visage;Crème de Nuit Régénérante;50 ml;89,900;creme-nuit.jpg;25',
-      'NEL-002;Parfums;Eau de Parfum Oud;100 ml;149,000;https://exemple.com/parfum.jpg;10'
+      'Ref;Categorie;SousCategorie;Designation;Contenance;Prix;PrixAchat;Image;Stock',
+      'CS-INT-001;Accessoires Intérieur;;Support téléphone magnétique;universel;14,900;8,500;support.jpg;25',
+      'CS-EXT-004;Accessoires Extérieur;4x4;Jerrycan métal 20 L;20 L;43,900;28,000;jerrycan.jpg;8',
+      'CS-DET-001;Nettoyage & Detailing;;Shampoing carrosserie;1 L;19,900;11,000;https://exemple.com/shampoing.jpg;10'
     ];
     const blob = new Blob(['\ufeff' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -618,8 +776,21 @@ export class ProductsManagerComponent implements OnInit, OnDestroy {
     URL.revokeObjectURL(url);
   }
 
+  goSection(id: 'general' | 'media' | 'pricing') {
+    this.editorSection = id;
+    document.getElementById('sec-' + id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  sectionHint(id: string): boolean {
+    if (id === 'media') return Boolean(this.imagePreview || this.imageValue);
+    if (id === 'pricing') return Boolean(this.productForm?.get('price')?.value);
+    if (id === 'general') return Boolean(this.productForm?.get('name')?.value);
+    return false;
+  }
+
   toggleForm() {
     this.showForm = !this.showForm;
+    this.editorSection = 'general';
     if (!this.showForm) {
       this.isEditMode = false;
       this.editingProductId = null;
@@ -633,14 +804,17 @@ export class ProductsManagerComponent implements OnInit, OnDestroy {
     this.editingProductId = product.id;
     this.showForm = true;
     this.showImport = false;
+    this.editorSection = 'general';
     this.imagePreview = product.image_url;
     this.productForm.patchValue({
       reference: product.reference,
       contenance: product.contenance,
       name: product.name,
       category: product.category,
+      subcategory: product.subcategory || '',
       brand: product.brand,
       price: product.price,
+      cost_price: product.cost_price,
       compare_price: product.compare_price,
       stock: product.stock,
       image_url: product.image_url,
@@ -651,7 +825,11 @@ export class ProductsManagerComponent implements OnInit, OnDestroy {
   saveProduct() {
     if (this.productForm.invalid) return;
 
-    const payload = this.productForm.value;
+    const payload = { ...this.productForm.value };
+    if (payload.cost_price === '' || payload.cost_price === null) {
+      payload.cost_price = null;
+    }
+    if (!payload.subcategory) payload.subcategory = null;
 
     if (this.isEditMode && this.editingProductId) {
       this.crud.update('products', this.editingProductId, payload).subscribe({

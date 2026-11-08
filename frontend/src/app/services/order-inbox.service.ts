@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subscription, interval, startWith, switchMap } from 'rxjs';
 import { ApiService } from './api.service';
+import { BrandService } from './brand.service';
 
 export interface OrderInbox {
   latestId: string | null;
@@ -16,8 +17,8 @@ export interface OrderAlert {
   at: number;
 }
 
-const LAST_ID_KEY = 'carstyle_admin_last_order_id';
-const SOUND_KEY = 'carstyle_admin_order_sound';
+const LAST_ID_KEY = 'shopkit_admin_last_order_id';
+const SOUND_KEY = 'shopkit_admin_order_sound';
 
 @Injectable({ providedIn: 'root' })
 export class OrderInboxService implements OnDestroy {
@@ -34,7 +35,7 @@ export class OrderInboxService implements OnDestroy {
   private audio: AudioContext | null = null;
   private primed = false;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private brand: BrandService) {}
 
   get soundEnabled(): boolean {
     return this.soundSubject.value;
@@ -146,9 +147,9 @@ export class OrderInboxService implements OnDestroy {
   private notifyBrowser(alert: OrderAlert) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     try {
-      new Notification('Carstyle — nouvelle commande', {
+      new Notification(`${this.brand.name} — nouvelle commande`, {
         body: `${alert.customer}${alert.totalAmount != null ? ' · ' + alert.totalAmount : ''}`,
-        tag: 'carstyle-order'
+        tag: 'shopkit-order'
       });
     } catch {
       /* ignore */

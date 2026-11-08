@@ -8,9 +8,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const authService = inject(AuthService);
   const token = localStorage.getItem('token');
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (typeof location !== 'undefined' && /ngrok/i.test(location.hostname)) {
+    headers['ngrok-skip-browser-warning'] = '1';
+  }
 
-  const request = token
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+  const request = Object.keys(headers).length
+    ? req.clone({ setHeaders: headers })
     : req;
 
   return next(request).pipe(
@@ -23,7 +28,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         // logout() plutôt qu'un simple nettoyage du localStorage : il remet aussi à
         // zéro currentUser$, donc l'en-tête cesse d'afficher un utilisateur connecté.
         authService.logout();
-        router.navigate(['/login'], {
+        router.navigate(['/auth/login'], {
           queryParams: { expired: '1', redirect: router.url }
         });
       }

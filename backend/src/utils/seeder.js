@@ -192,8 +192,24 @@ const seedData = async () => {
     await Product.destroy({ where: {}, truncate: { cascade: true } });
     await Category.destroy({ where: {}, truncate: { cascade: true } });
 
-    await Category.bulkCreate(CATEGORIES);
-    await Product.bulkCreate(PRODUCTS);
+    const parents = await Category.bulkCreate(CATEGORIES, { returning: true });
+    const exterior = parents.find((c) => c.name === 'Accessoires Extérieur');
+    const electronics = parents.find((c) => c.name === 'Électronique');
+    if (exterior) {
+      await Category.bulkCreate([
+        { name: '4x4', description: 'Jerrycans, protections et accessoires tout-terrain.', parent_id: exterior.id },
+        { name: 'Protection carrosserie', description: 'Films, baguettes et protections.', parent_id: exterior.id }
+      ]);
+    }
+    if (electronics) {
+      await Category.bulkCreate([
+        { name: 'Caméras', description: 'Recul, dashcam et aides à la conduite.', parent_id: electronics.id }
+      ]);
+    }
+    await Product.bulkCreate(PRODUCTS.map((p) => ({
+      ...p,
+      cost_price: Number((Number(p.price) * 0.62).toFixed(2))
+    })));
 
     await Setting.upsert({ key: 'currency', value: 'TND' });
     await Setting.upsert({ key: 'guest_checkout', value: 'true' });

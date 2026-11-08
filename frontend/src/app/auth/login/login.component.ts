@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { BrandService } from '../../services/brand.service';
 
 @Component({
   selector: 'app-login',
@@ -31,8 +32,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
         <div class="brand-panel">
           <div class="brand-glow"></div>
           <div class="brand-content-wrapper">
-            <h1 class="brand-logo-large">CARSTYLE</h1>
-            <p class="brand-tagline">Accessoires auto, detailing & entretien</p>
+            <h1 class="brand-logo-large">{{ brand.name }}</h1>
+            <p class="brand-tagline">{{ brand.copy.heroSubtitle }}</p>
             <div class="line-gold"></div>
             <div class="brand-features">
               <div class="feature-item">
@@ -45,8 +46,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
               <div class="feature-item">
                 <mat-icon>auto_awesome</mat-icon>
                 <div class="feature-text">
-                  <h4>Atelier Le Bardo</h4>
-                  <p>Conseil, retrait et suivi de commande en Tunisie.</p>
+                  <h4>{{ brand.copy.atelierEyebrow }}</h4>
+                  <p>Conseil, retrait et suivi de commande.</p>
                 </div>
               </div>
               <div class="feature-item">
@@ -59,14 +60,14 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
             </div>
           </div>
           <div class="brand-footer">
-            <span>© 2026 CARSTYLE. TOUS DROITS RÉSERVÉS</span>
+            <span>© {{ brand.year }} {{ brand.legalName }}. TOUS DROITS RÉSERVÉS</span>
           </div>
         </div>
 
         <!-- Right Form Section -->
         <div class="form-panel">
           <div class="form-container fade-in">
-            <div class="mobile-logo">CARSTYLE</div>
+            <div class="mobile-logo">{{ brand.name }}</div>
             <div class="form-header">
               <h2>Connexion</h2>
               <p>Entrez vos identifiants pour accéder à votre espace.</p>
@@ -293,7 +294,9 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar,
+    public brand: BrandService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -307,7 +310,12 @@ export class LoginComponent {
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
           this.snackBar.open('Connexion réussie !', 'Fermer', { duration: 3000 });
-          this.router.navigate(['/']);
+          const redirect = this.route.snapshot.queryParamMap.get('redirect');
+          if (redirect?.startsWith('/')) {
+            this.router.navigateByUrl(redirect);
+          } else {
+            this.router.navigate([this.authService.homeAfterLogin()]);
+          }
         },
         error: (err) => {
           this.isLoading = false;

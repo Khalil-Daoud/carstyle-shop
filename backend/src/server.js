@@ -27,6 +27,28 @@ function shutdown(signal) {
   });
 }
 
+async function ensureAdmin() {
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) return;
+
+  const { User } = require('./models');
+  const existing = await User.findOne({ where: { email } });
+  if (existing) {
+    console.log(`Admin déjà présent : ${email}`);
+    return;
+  }
+
+  await User.create({
+    first_name: 'Admin',
+    last_name: 'Carstyle',
+    email,
+    password,
+    role: 'admin'
+  });
+  console.log(`Administrateur créé : ${email}`);
+}
+
 async function waitForDatabase(attempts = 8) {
   let lastError;
   for (let i = 1; i <= attempts; i += 1) {
@@ -74,8 +96,10 @@ async function startServer() {
       await sequelize.query('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "reference" VARCHAR(255)');
       await sequelize.query('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "contenance" VARCHAR(255)');
       await sequelize.query('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "compare_price" DECIMAL(10,2)');
+      await sequelize.query('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "cost_price" DECIMAL(10,2)');
       await sequelize.query('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "brand" VARCHAR(255)');
-      console.log('Schema migration applied (products.reference, contenance, compare_price, brand).');
+      await sequelize.query('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "subcategory" VARCHAR(255)');
+      console.log('Schema migration applied (products.reference, contenance, compare_price, cost_price, brand, subcategory).');
     } catch (e) {
       console.warn('Migration products.reference/contenance skipped:', e.message);
     }
@@ -119,6 +143,42 @@ async function startServer() {
       console.warn('Migration orders.extra_fields skipped:', e.message);
     }
 
+    try {
+      await sequelize.query('ALTER TABLE "order_items" ADD COLUMN IF NOT EXISTS "unit_cost" DECIMAL(10,2)');
+      console.log('Schema migration applied (order_items.unit_cost).');
+    } catch (e) {
+      console.warn('Migration order_items.unit_cost skipped:', e.message);
+    }
+
+    try {
+      await sequelize.query('ALTER TABLE "categories" ADD COLUMN IF NOT EXISTS "parent_id" UUID');
+      await sequelize.query('CREATE INDEX IF NOT EXISTS "categories_parent_id_idx" ON "categories" ("parent_id")');
+      console.log('Schema migration applied (categories.parent_id).');
+    } catch (e) {
+      console.warn('Migration categories.parent_id skipped:', e.message);
+    }
+
+    try {
+      await sequelize.query(`
+        CREATE TABLE IF NOT EXISTS "audit_logs" (
+          "id" UUID PRIMARY KEY,
+          "actor_id" UUID,
+          "actor_name" VARCHAR(255) NOT NULL,
+          "action" VARCHAR(80) NOT NULL,
+          "entity" VARCHAR(40) NOT NULL,
+          "entity_id" VARCHAR(80),
+          "summary" TEXT NOT NULL,
+          "meta" TEXT,
+          "created_at" TIMESTAMP WITH TIME ZONE NOT NULL
+        )
+      `);
+      await sequelize.query('CREATE INDEX IF NOT EXISTS "audit_logs_created_at_idx" ON "audit_logs" ("created_at" DESC)');
+      await sequelize.query('CREATE INDEX IF NOT EXISTS "audit_logs_entity_idx" ON "audit_logs" ("entity")');
+      console.log('Schema migration applied (audit_logs).');
+    } catch (e) {
+      console.warn('Migration audit_logs skipped:', e.message);
+    }
+
     // [BUG-005 FIX] sync({ force: false }) ne modifie jamais les données existantes.
     // En production, utiliser des migrations Sequelize (sequelize-cli).
     await sequelize.sync({ force: false });
@@ -131,11 +191,15 @@ async function startServer() {
       await sequelize.query('CREATE INDEX IF NOT EXISTS "products_created_at_idx" ON "products" ("created_at" DESC)');
       await sequelize.query('CREATE INDEX IF NOT EXISTS "products_reference_idx" ON "products" ("reference")');
       await sequelize.query('CREATE INDEX IF NOT EXISTS "products_category_idx" ON "products" ("category")');
+      await sequelize.query('CREATE INDEX IF NOT EXISTS "products_subcategory_idx" ON "products" ("subcategory")');
       await sequelize.query('CREATE INDEX IF NOT EXISTS "orders_user_id_idx" ON "orders" ("user_id")');
       await sequelize.query('CREATE INDEX IF NOT EXISTS "orders_created_at_idx" ON "orders" ("created_at" DESC)');
       await sequelize.query('CREATE INDEX IF NOT EXISTS "order_items_order_id_idx" ON "order_items" ("order_id")');
       await sequelize.query('CREATE INDEX IF NOT EXISTS "order_items_product_id_idx" ON "order_items" ("product_id")');
-      console.log('Indexes ensured (products, orders, order_items).');
+      await sequelize.query('CREATE INDEX IF NOT EXISTS "reviews_product_id_idx" ON "reviews" ("product_id")');
+      await sequelize.query('CREATE UNIQUE INDEX IF NOT EXISTS "reviews_user_product_idx" ON "reviews" ("user_id", "product_id") WHERE "product_id" IS NOT NULL');
+      await sequelize.query('CREATE UNIQUE INDEX IF NOT EXISTS "reviews_user_shop_idx" ON "reviews" ("user_id") WHERE "product_id" IS NULL');
+      console.log('Indexes ensured (products, orders, order_items, reviews).');
     } catch (e) {
       console.warn('Index creation skipped:', e.message);
     }
@@ -164,6 +228,8 @@ async function startServer() {
     } else {
       console.log(`Base de données déjà initialisée (${productCount} produits).`);
     }
+
+    await ensureAdmin();
 
     httpServer = app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);

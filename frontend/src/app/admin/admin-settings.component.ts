@@ -9,8 +9,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { SettingsService, Currency, WhatsAppSettings, LoyaltyTier, DEFAULT_LOYALTY_TIERS, DEFAULT_CHECKOUT_FIELDS, DEFAULT_HERO, CheckoutField, PermissionDef, PermissionGroup, HeroSettings } from '../services/settings.service';
+import { SettingsService, Currency, WhatsAppSettings, LoyaltyTier, DEFAULT_LOYALTY_TIERS, DEFAULT_CHECKOUT_FIELDS, CheckoutField, PermissionDef, PermissionGroup } from '../services/settings.service';
 import { FormatCurrencyPipe } from '../pipes/format-currency.pipe';
 import { ImageUrlPipe } from '../pipes/image-url.pipe';
 import { ApiService } from '../services/api.service';
@@ -19,92 +20,42 @@ import { ApiService } from '../services/api.service';
   selector: 'app-admin-settings',
   standalone: true,
   imports: [
-    CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatRadioModule,
+    CommonModule, RouterLink, MatCardModule, MatButtonModule, MatIconModule, MatRadioModule,
     MatCheckboxModule, MatFormFieldModule, MatInputModule, MatSelectModule, FormsModule,
     MatSnackBarModule, FormatCurrencyPipe, ImageUrlPipe
   ],
   template: `
     <div class="settings-page fade-in">
-      <p class="lead">Bandeau d’accueil, devise, commande, fidélité, WhatsApp et groupes de permissions.</p>
-
-      <section class="panel panel-hero">
-        <header class="card-head" (click)="toggleCard('hero')">
-          <mat-icon>movie</mat-icon>
+      <a class="identity-link" routerLink="/admin/identity">
+        <mat-icon>palette</mat-icon>
+        <span>
+          <strong>Identité du site</strong>
+          <small>Logo, couleurs, page d’accueil, textes et coordonnées</small>
+        </span>
+        <mat-icon>arrow_forward</mat-icon>
+      </a>
+      <section class="panel perms">
+        <header class="card-head" (click)="toggleCard('perms')" [attr.aria-expanded]="open.perms">
+          <span class="head-icon"><mat-icon>vpn_key</mat-icon></span>
           <div>
-            <span class="eyebrow">Boutique</span>
-            <h2>Bandeau d’accueil</h2>
-            <p>Vidéo ou photo. Le client voit ce média en haut du site.</p>
+            <h2>Permissions</h2>
+            <p>Droits de chaque groupe. Les administrateurs ont toujours tout.</p>
           </div>
-          <button type="button" class="fold-btn" (click)="$event.stopPropagation(); toggleCard('hero')" [attr.aria-expanded]="open.hero">
-            <mat-icon>{{ open.hero ? 'expand_less' : 'expand_more' }}</mat-icon>
-            {{ open.hero ? 'Masquer' : 'Afficher' }}
-          </button>
+          <mat-icon class="chevron">{{ open.perms ? 'expand_less' : 'expand_more' }}</mat-icon>
         </header>
-        <div class="card-body" *ngIf="open.hero">
-        <div class="hero-body">
-          <div class="hero-preview" *ngIf="hero.type === 'video' && hero.videoUrl">
-            <video [src]="hero.videoUrl | imageUrl" [poster]="hero.posterUrl | imageUrl" muted loop playsinline controls></video>
-          </div>
-          <div class="hero-preview" *ngIf="hero.type === 'image' && hero.imageUrl">
-            <img [src]="hero.imageUrl | imageUrl" alt="Aperçu du bandeau">
-          </div>
-
-          <div class="hero-controls">
-            <div class="choice-list choice-row">
-              <button type="button" class="choice" [class.on]="hero.type === 'video'" (click)="hero.type = 'video'">
-                <mat-icon>movie</mat-icon>
-                <span>
-                  <strong>Vidéo</strong>
-                  <small>Lecture en boucle, muette</small>
-                </span>
-              </button>
-              <button type="button" class="choice" [class.on]="hero.type === 'image'" (click)="hero.type = 'image'">
-                <mat-icon>image</mat-icon>
-                <span>
-                  <strong>Image</strong>
-                  <small>Photo fixe, plus légère</small>
-                </span>
-              </button>
-            </div>
-
-            <input #heroVideoInput type="file" accept="video/mp4,video/webm,video/quicktime" hidden (change)="onHeroFile($event, 'video')">
-            <input #heroImageInput type="file" accept="image/*" hidden (change)="onHeroFile($event, 'image')">
-            <div class="hero-actions">
-              <button *ngIf="hero.type === 'video'" type="button" mat-stroked-button [disabled]="uploadingHero" (click)="heroVideoInput.click()">
-                <mat-icon>upload</mat-icon> {{ uploadingHero ? 'Envoi…' : 'Choisir une vidéo' }}
-              </button>
-              <button type="button" mat-stroked-button [disabled]="uploadingHero" (click)="heroImageInput.click()">
-                <mat-icon>photo</mat-icon>
-                {{ uploadingHero ? 'Envoi…' : (hero.type === 'video' ? 'Image d’attente' : 'Choisir une image') }}
-              </button>
-            </div>
-            <p class="fields-hint">MP4 ou WebM jusqu’à 40 Mo. JPG ou PNG pour une image.</p>
-            <div class="hero-actions">
-              <button mat-flat-button color="primary" [disabled]="savingHero || uploadingHero" (click)="saveHero()">
-                Enregistrer le bandeau
-              </button>
-              <button mat-stroked-button type="button" [disabled]="savingHero" (click)="resetHero()">
-                Vidéo d’origine
-              </button>
-            </div>
-          </div>
-        </div>
+        <div class="card-body" *ngIf="open.perms">
+          <ng-container *ngTemplateOutlet="permsFields"></ng-container>
         </div>
       </section>
-
       <div class="cards-row">
           <section class="panel">
-            <header class="card-head" (click)="toggleCard('currency')">
-              <mat-icon>payments</mat-icon>
+            <header class="card-head" (click)="toggleCard('currency')" [attr.aria-expanded]="open.currency">
+              <span class="head-icon"><mat-icon>payments</mat-icon></span>
               <div>
-                <span class="eyebrow">Boutique</span>
                 <h2>Devise</h2>
                 <p>Les montants restent les mêmes, seul le symbole change.</p>
               </div>
-              <button type="button" class="fold-btn" (click)="$event.stopPropagation(); toggleCard('currency')" [attr.aria-expanded]="open.currency">
-                <mat-icon>{{ open.currency ? 'expand_less' : 'expand_more' }}</mat-icon>
-                {{ open.currency ? 'Masquer' : 'Afficher' }}
-              </button>
+              <mat-icon class="chevron">{{ open.currency ? 'expand_less' : 'expand_more' }}</mat-icon>
             </header>
             <div class="card-body" *ngIf="open.currency">
 
@@ -123,31 +74,24 @@ import { ApiService } from '../services/api.service';
               <strong>{{ 25 | formatCurrency }}</strong>
             </div>
 
-            <button mat-flat-button color="primary" class="save-btn"
-              [disabled]="selected === current?.code || saving" (click)="save()">
-              Enregistrer la devise
-            </button>
+            <div class="save-bar">
+              <button mat-flat-button color="primary"
+                [disabled]="selected === current?.code || saving" (click)="save()">
+                Enregistrer la devise
+              </button>
+            </div>
             </div>
           </section>
+      </div>
 
           <section class="panel">
-            <header class="card-head" (click)="toggleCard('loyalty')">
-              <mat-icon>stars</mat-icon>
+            <header class="card-head" (click)="toggleCard('loyalty')" [attr.aria-expanded]="open.loyalty">
+              <span class="head-icon"><mat-icon>local_offer</mat-icon></span>
               <div>
-                <span class="eyebrow">Programme</span>
                 <h2>Points fidélité</h2>
                 <p>Un client connecté gagne des points selon le prix unitaire × la quantité. Les invités n’en reçoivent pas.</p>
-                <div class="chips">
-                  <span class="chip" *ngFor="let t of loyaltyTiers">
-                    {{ t.min }}–{{ t.max }} {{ currencySymbol }}
-                    <b>{{ t.points }} pts</b>
-                  </span>
-                </div>
               </div>
-              <button type="button" class="fold-btn" (click)="$event.stopPropagation(); toggleCard('loyalty')" [attr.aria-expanded]="open.loyalty">
-                <mat-icon>{{ open.loyalty ? 'expand_less' : 'expand_more' }}</mat-icon>
-                {{ open.loyalty ? 'Masquer' : 'Afficher' }}
-              </button>
+              <mat-icon class="chevron">{{ open.loyalty ? 'expand_less' : 'expand_more' }}</mat-icon>
             </header>
             <div class="card-body" *ngIf="open.loyalty">
             <p class="rule">Le premier palier qui contient le prix s’applique (minimum inclus).</p>
@@ -176,26 +120,23 @@ import { ApiService } from '../services/api.service';
               <button mat-stroked-button type="button" (click)="addTier()" [disabled]="loyaltyTiers.length >= 20">
                 <mat-icon>add</mat-icon> Palier
               </button>
+            </div>
+            <div class="save-bar">
               <button mat-flat-button color="primary" [disabled]="savingLoyalty" (click)="saveLoyalty()">
-                Enregistrer
+                Enregistrer les paliers
               </button>
             </div>
             </div>
           </section>
-      </div>
 
           <section class="panel">
-            <header class="card-head" (click)="toggleCard('checkout')">
-              <mat-icon>shopping_bag</mat-icon>
+            <header class="card-head" (click)="toggleCard('checkout')" [attr.aria-expanded]="open.checkout">
+              <span class="head-icon"><mat-icon>shopping_bag</mat-icon></span>
               <div>
-                <span class="eyebrow">Vente</span>
                 <h2>Commande</h2>
-                <p>Qui a le droit de valider un panier. Toute commande est enregistrée en « En attente » jusqu’à ce que vous changiez le statut.</p>
+                <p>Compte obligatoire ou invité, et champs du formulaire.</p>
               </div>
-              <button type="button" class="fold-btn" (click)="$event.stopPropagation(); toggleCard('checkout')" [attr.aria-expanded]="open.checkout">
-                <mat-icon>{{ open.checkout ? 'expand_less' : 'expand_more' }}</mat-icon>
-                {{ open.checkout ? 'Masquer' : 'Afficher' }}
-              </button>
+              <mat-icon class="chevron">{{ open.checkout ? 'expand_less' : 'expand_more' }}</mat-icon>
             </header>
             <div class="card-body" *ngIf="open.checkout">
 
@@ -256,24 +197,22 @@ import { ApiService } from '../services/api.service';
                 <mat-icon>add</mat-icon> Ajouter
               </button>
             </div>
-            <button mat-flat-button color="primary" class="save-btn" [disabled]="savingFields" (click)="saveCheckoutFields()">
-              Enregistrer les champs
-            </button>
+            <div class="save-bar">
+              <button mat-flat-button color="primary" [disabled]="savingFields" (click)="saveCheckoutFields()">
+                Enregistrer les champs
+              </button>
+            </div>
             </div>
           </section>
 
           <section class="panel whatsapp">
-            <header class="card-head card-head-wa" (click)="toggleCard('whatsapp')">
-              <mat-icon>chat</mat-icon>
+            <header class="card-head card-head-wa" (click)="toggleCard('whatsapp')" [attr.aria-expanded]="open.whatsapp">
+              <span class="head-icon"><mat-icon>chat</mat-icon></span>
               <div>
-                <span class="eyebrow">Contact</span>
                 <h2>WhatsApp</h2>
-                <p>Le numéro de la boutique, et l’envoi de confirmation au client.</p>
+                <p>Numéro boutique et envoi de confirmation au client.</p>
               </div>
-              <button type="button" class="fold-btn" (click)="$event.stopPropagation(); toggleCard('whatsapp')" [attr.aria-expanded]="open.whatsapp">
-                <mat-icon>{{ open.whatsapp ? 'expand_less' : 'expand_more' }}</mat-icon>
-                {{ open.whatsapp ? 'Masquer' : 'Afficher' }}
-              </button>
+              <mat-icon class="chevron">{{ open.whatsapp ? 'expand_less' : 'expand_more' }}</mat-icon>
             </header>
 
             <div class="wa-body" *ngIf="open.whatsapp">
@@ -284,9 +223,11 @@ import { ApiService } from '../services/api.service';
                   <mat-label>Indicatif pays inclus</mat-label>
                   <input matInput [(ngModel)]="whatsappNumber" placeholder="+216 22 580 632">
                 </mat-form-field>
-                <button mat-stroked-button [disabled]="savingNumber || !numberChanged" (click)="saveNumber()">
-                  Enregistrer le numéro
-                </button>
+                <div class="save-bar">
+                  <button mat-flat-button color="primary" [disabled]="savingNumber || !numberChanged" (click)="saveNumber()">
+                    Enregistrer le numéro
+                  </button>
+                </div>
               </div>
 
               <div class="wa-col wa-col-confirm">
@@ -335,31 +276,16 @@ import { ApiService } from '../services/api.service';
                     {{ testingWa ? 'Envoi…' : 'Envoyer un test' }}
                   </button>
                 </div>
-                <button mat-stroked-button type="button" [disabled]="savingGateway" (click)="saveGateway()">
-                  Enregistrer la clé
-                </button>
+                <div class="save-bar">
+                  <button mat-flat-button color="primary" type="button" [disabled]="savingGateway" (click)="saveGateway()">
+                    Enregistrer la clé
+                  </button>
+                </div>
               </div>
             </div>
           </section>
 
-      <section class="panel perms">
-        <header class="card-head" (click)="toggleCard('perms')">
-          <mat-icon>admin_panel_settings</mat-icon>
-          <div>
-            <span class="eyebrow">Accès</span>
-            <h2>Table des permissions</h2>
-            <p>
-              Cochez ce que chaque groupe a le droit de faire.
-              Les administrateurs ont toujours tout. Assignez un groupe à un employé dans <strong>Clients &amp; Employés</strong>.
-            </p>
-          </div>
-          <button type="button" class="fold-btn" (click)="$event.stopPropagation(); toggleCard('perms')" [attr.aria-expanded]="open.perms">
-            <mat-icon>{{ open.perms ? 'expand_less' : 'expand_more' }}</mat-icon>
-            {{ open.perms ? 'Masquer' : 'Afficher' }}
-          </button>
-        </header>
-        <div class="card-body" *ngIf="open.perms">
-
+      <ng-template #permsFields>
         <div class="perm-create">
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Nouveau groupe</mat-label>
@@ -409,11 +335,12 @@ import { ApiService } from '../services/api.service';
           </table>
         </div>
 
-        <button mat-flat-button color="primary" class="save-btn" [disabled]="savingPerms" (click)="savePermissionGroups()">
-          Enregistrer les groupes
-        </button>
+        <div class="save-bar">
+          <button mat-flat-button color="primary" [disabled]="savingPerms" (click)="savePermissionGroups()">
+            Enregistrer les groupes
+          </button>
         </div>
-      </section>
+      </ng-template>
     </div>
   `,
   styles: [`
@@ -421,61 +348,55 @@ import { ApiService } from '../services/api.service';
       display: flex; flex-direction: column; gap: 20px;
       padding: 0 0 32px; width: 100%; min-width: 0;
     }
-    .lead { margin: 0; color: var(--luxe-text-muted); font-weight: 400; font-size: 0.95rem; line-height: 1.5; }
-
+    .identity-link {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 18px; border-radius: 16px; text-decoration: none;
+      background: var(--luxe-black); color: #fff;
+    }
+    .identity-link strong { display: block; font-size: 0.95rem; }
+    .identity-link small { display: block; color: rgba(255,255,255,0.65); margin-top: 2px; }
+    .identity-link > span { flex: 1; }
+    .identity-link mat-icon { color: var(--luxe-gold); }
     .cards-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 16px;
       align-items: stretch;
     }
 
     .panel, .whatsapp, .perms {
       background: var(--luxe-white);
       border: 1px solid var(--luxe-border);
-      border-radius: 16px;
-      box-shadow: var(--shadow-subtle);
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(10,10,10,0.04);
       min-width: 0;
       overflow: hidden;
       display: flex;
       flex-direction: column;
     }
     .card-head {
-      display: flex; gap: 14px; align-items: flex-start;
-      padding: 20px 24px;
-      background: linear-gradient(160deg, #1a1a1a 0%, #2c2c2c 100%);
-      color: #fff;
+      display: flex; gap: 16px; align-items: center;
+      padding: 20px 22px;
+      background: #fff;
       cursor: pointer;
     }
+    .card-head:hover { background: #fcfcfc; }
     .card-head > div { flex: 1; min-width: 0; }
-    .fold-btn {
-      margin-left: auto; flex-shrink: 0; align-self: flex-start;
-      display: inline-flex; align-items: center; gap: 4px;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.08);
-      color: #fff; border-radius: 999px;
-      padding: 7px 12px 7px 8px; cursor: pointer;
-      font-family: var(--font-body); font-size: 0.78rem; font-weight: 500;
+    .head-icon {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #f3ead2; color: #c4a35a;
     }
-    .fold-btn:hover { background: rgba(255,255,255,0.16); }
-    .fold-btn mat-icon { font-size: 20px; width: 20px; height: 20px; }
-    .card-head > mat-icon {
-      font-size: 26px; width: 26px; height: 26px; color: var(--luxe-gold); flex-shrink: 0; margin-top: 2px;
-    }
-    .card-head .eyebrow {
-      display: block; font-size: 0.68rem; letter-spacing: 2.4px; text-transform: uppercase;
-      color: var(--luxe-gold); font-weight: 600; margin-bottom: 6px;
-    }
+    .head-icon mat-icon { font-size: 20px; width: 20px; height: 20px; line-height: 20px; }
     .card-head h2 {
-      margin: 0 0 6px; font-family: var(--font-heading); font-weight: 500;
-      font-size: 1.35rem; line-height: 1.25; color: #fff; letter-spacing: 0;
+      margin: 0 0 4px; font-family: var(--font-heading); font-weight: 600;
+      font-size: 1.02rem; line-height: 1.25; color: var(--luxe-black); letter-spacing: 0;
     }
     .card-head p {
-      margin: 0; font-size: 0.85rem; font-weight: 400; color: rgba(255,255,255,0.72); line-height: 1.55;
+      margin: 0; font-size: 0.82rem; font-weight: 400; color: var(--luxe-text-muted); line-height: 1.45;
     }
-    .card-head-wa { background: linear-gradient(160deg, #12361f 0%, #1b4d2c 100%); }
-    .card-head-wa > mat-icon { color: #25D366; }
-    .card-head-wa .eyebrow { color: #7ddea0; }
+    .chevron { margin-left: auto; color: #c5c5c5; flex-shrink: 0; }
+    .card-head-wa .head-icon { background: #e7f8ee; color: #25D366; }
     .card-body { padding: 22px 24px 24px; display: flex; flex-direction: column; flex: 1; min-width: 0; }
     .wa-col h3 {
       margin: 0 0 6px; font-family: var(--font-heading); font-weight: 500; color: var(--luxe-black);
@@ -504,8 +425,8 @@ import { ApiService } from '../services/api.service';
 
     .hero-body {
       display: grid;
-      grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
-      gap: 28px;
+      grid-template-columns: 1fr;
+      gap: 20px;
       align-items: start;
     }
     .hero-preview {
@@ -675,33 +596,30 @@ export class AdminSettingsComponent implements OnInit {
   savingLoyalty = false;
 
   permissionCatalog: PermissionDef[] = [
+    { key: 'admin.access', section: 'Accès', label: 'Voir l’espace administration' },
     { key: 'orders.update_status', section: 'Commandes', label: 'Changer le statut (attente, confirmée, expédiée, livrée)' },
     { key: 'orders.cancel', section: 'Commandes', label: 'Annuler une commande' },
     { key: 'products.manage', section: 'Catalogue', label: 'Créer et modifier les produits' },
     { key: 'stock.manage', section: 'Catalogue', label: 'Ajuster le stock' },
-    { key: 'categories.manage', section: 'Catalogue', label: 'Gérer les catégories' }
+    { key: 'categories.manage', section: 'Catalogue', label: 'Gérer les catégories' },
+    { key: 'audit.view', section: 'Historique', label: 'Consulter l’historique des actions' }
   ];
   permissionGroups: PermissionGroup[] = [
     { id: 'admin', name: 'Administrateur', system: true, permissions: ['*'] },
-    { id: 'seller', name: 'Employé', system: true, permissions: ['orders.update_status', 'orders.cancel', 'products.manage', 'stock.manage', 'categories.manage'] }
+    { id: 'seller', name: 'Employé', system: true, permissions: ['admin.access', 'orders.update_status', 'orders.cancel', 'products.manage', 'stock.manage', 'categories.manage'] }
   ];
   newGroupName = '';
   savingPerms = false;
 
-  hero: HeroSettings = { ...DEFAULT_HERO };
-  savingHero = false;
-  uploadingHero = false;
-
   open = {
-    hero: true,
-    currency: true,
-    loyalty: true,
-    checkout: true,
-    whatsapp: true,
-    perms: true
+    currency: false,
+    loyalty: false,
+    checkout: false,
+    whatsapp: false,
+    perms: false
   };
 
-  toggleCard(key: 'hero' | 'currency' | 'loyalty' | 'checkout' | 'whatsapp' | 'perms') {
+  toggleCard(key: 'currency' | 'loyalty' | 'checkout' | 'whatsapp' | 'perms') {
     this.open[key] = !this.open[key];
   }
 
@@ -734,10 +652,6 @@ export class AdminSettingsComponent implements OnInit {
 
     this.settings.loyaltyTiers$.subscribe((tiers: LoyaltyTier[]) => {
       this.loyaltyTiers = (tiers || DEFAULT_LOYALTY_TIERS).map(t => ({ ...t }));
-    });
-
-    this.settings.hero$.subscribe((hero) => {
-      this.hero = { ...DEFAULT_HERO, ...hero };
     });
 
     this.settings.loadAccess().then((access) => {
@@ -779,7 +693,7 @@ export class AdminSettingsComponent implements OnInit {
         id: `grp_${Date.now().toString(36)}`,
         name,
         system: false,
-        permissions: ['orders.update_status']
+        permissions: ['admin.access', 'orders.update_status']
       }
     ];
     this.newGroupName = '';
@@ -838,51 +752,6 @@ export class AdminSettingsComponent implements OnInit {
 
   get numberChanged(): boolean {
     return this.whatsappNumber.replace(/\D/g, '') !== this.whatsapp.number;
-  }
-
-  onHeroFile(event: Event, kind: 'video' | 'image') {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    this.uploadingHero = true;
-    this.api.post<{ url: string; kind: string }>('uploads/hero', formData).subscribe({
-      next: (res) => {
-        this.uploadingHero = false;
-        if (res.kind === 'video') {
-          this.hero.type = 'video';
-          this.hero.videoUrl = res.url;
-        } else if (kind === 'video') {
-          this.hero.posterUrl = res.url;
-        } else {
-          this.hero.imageUrl = res.url;
-          if (this.hero.type === 'image') this.hero.posterUrl = res.url;
-        }
-        this.snackBar.open(res.kind === 'video' ? 'Vidéo envoyée' : 'Image envoyée', 'OK', { duration: 2500 });
-      },
-      error: (err) => {
-        this.uploadingHero = false;
-        this.snackBar.open(err?.error?.message || 'Envoi impossible', 'Fermer', { duration: 4000 });
-      }
-    });
-    input.value = '';
-  }
-
-  saveHero() {
-    this.savingHero = true;
-    this.settings.save({ hero: this.hero }).then(() => {
-      this.savingHero = false;
-      this.snackBar.open('Bandeau d’accueil enregistré', 'OK', { duration: 3000 });
-    }).catch((err) => {
-      this.savingHero = false;
-      this.snackBar.open(err?.error?.message || 'Enregistrement impossible', 'Fermer', { duration: 4000 });
-    });
-  }
-
-  resetHero() {
-    this.hero = { ...DEFAULT_HERO };
-    this.saveHero();
   }
 
   save() {

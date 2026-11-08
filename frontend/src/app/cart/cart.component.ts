@@ -1,4 +1,5 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CartService, CartItem } from '../services/cart.service';
 import { MatCardModule } from '@angular/material/card';
@@ -17,6 +18,7 @@ import { ImageUrlPipe } from '../pipes/image-url.pipe';
 import { FormatCurrencyPipe } from '../pipes/format-currency.pipe';
 import { BreadcrumbComponent } from '../components/breadcrumb/breadcrumb.component';
 import { CheckoutField, SettingsService } from '../services/settings.service';
+import { BrandService } from '../services/brand.service';
 
 export interface CheckoutDialogData {
   guest: boolean;
@@ -248,7 +250,7 @@ export class CheckoutDialogComponent {
       
       <div class="cart-layout" *ngIf="items.length > 0; else emptyCart">
         <div class="items-list">
-          <mat-card class="cart-card" *ngFor="let item of items">
+          <mat-card class="cart-card" *ngFor="let item of items; trackBy: trackById">
             <div class="item-content">
               <img [src]="item.image_url | imageUrl" [alt]="item.name" class="item-img">
               <div class="item-details">
@@ -387,23 +389,30 @@ export class CartComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private settings: SettingsService
+    private settings: SettingsService,
+    private brand: BrandService
   ) {}
 
+  private destroyRef = inject(DestroyRef);
+
   ngOnInit() {
-    this.cartService.cartItems$.subscribe(items => {
+    this.cartService.cartItems$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(items => {
       this.items = items;
       this.total = this.cartService.totalAmount;
       this.estimatedPoints = this.settings.pointsForItems(items);
     });
 
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(user => {
       this.currentUser = user;
     });
 
-    this.settings.guestCheckout$.subscribe(enabled => {
+    this.settings.guestCheckout$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(enabled => {
       this.guestCheckoutEnabled = enabled;
     });
+  }
+
+  trackById(_index: number, item: CartItem) {
+    return item.id;
   }
 
   increase(item: CartItem) {
@@ -420,12 +429,12 @@ export class CartComponent implements OnInit {
   }
 
   get cartWhatsAppLink(): string {
-    const digits = String(this.settings.whatsapp?.number || '21653933751').replace(/\D/g, '');
+    const digits = String(this.settings.whatsapp?.number || this.brand.contact.whatsapp || '').replace(/\D/g, '');
     const symbol = this.settings.currency?.symbol || 'DT';
     const money = (value: number) =>
       `${Number(value).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`;
     const lines = [
-      'Bonjour Carstyle,',
+      `Bonjour ${this.brand.name},`,
       '',
       'Je souhaite commander :',
       ...this.items.map((item) => `• ${item.name} × ${item.quantity} — ${money(item.price * item.quantity)}`),
@@ -535,7 +544,7 @@ export class CartComponent implements OnInit {
     });
 
     const lines = [
-      'Bonjour Carstyle,',
+      `Bonjour ${this.brand.name},`,
       '',
       `Nouvelle commande ${ref}`
     ];

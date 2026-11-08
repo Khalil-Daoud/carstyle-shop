@@ -146,12 +146,12 @@ button { font-family: var(--font-body); }
   border-radius: var(--radius-sm);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--luxe-offwhite); }
-::-webkit-scrollbar-thumb { background: #d8d8d8; border-radius: var(--radius-full); }
+/* Scrollbar — piste transparente pour ne pas casser les fonds noirs */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.18); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--luxe-gold); }
-html { scrollbar-width: thin; scrollbar-color: #d8d8d8 var(--luxe-offwhite); }
+html { scrollbar-width: thin; scrollbar-color: rgba(0, 0, 0, 0.22) transparent; }
 
 /* ==========================================================================
    3. TYPOGRAPHIE
@@ -231,8 +231,9 @@ html { scrollbar-width: thin; scrollbar-color: #d8d8d8 var(--luxe-offwhite); }
   border-radius: var(--radius-full) !important;
 }
 
-/* Bouton primaire (noir → or au survol) */
-.mat-mdc-raised-button.mat-primary {
+/* Bouton primaire (noir). Flat = même teinte : sinon Material reste indigo. */
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary {
   background-color: var(--luxe-black) !important;
   color: var(--luxe-white) !important;
   padding: 12px 32px !important;
@@ -244,21 +245,25 @@ html { scrollbar-width: thin; scrollbar-color: #d8d8d8 var(--luxe-offwhite); }
   position: relative;
   overflow: hidden;
 }
-.mat-mdc-raised-button.mat-primary:hover {
+.mat-mdc-raised-button.mat-primary:hover,
+.mat-mdc-unelevated-button.mat-primary:hover {
   background-color: var(--luxe-black) !important;
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover) !important;
 }
-.mat-mdc-raised-button.mat-primary::after {
+.mat-mdc-raised-button.mat-primary::after,
+.mat-mdc-unelevated-button.mat-primary::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(198, 160, 74, 0.35), transparent);
+  background: linear-gradient(90deg, transparent, rgba(217, 4, 41, 0.28), transparent);
   transform: translateX(-100%);
   transition: transform 0.6s ease;
 }
-.mat-mdc-raised-button.mat-primary:hover::after { transform: translateX(100%); }
-.mat-mdc-raised-button.mat-primary:disabled { background-color: #d9d9d9 !important; color: #9a9a9a !important; }
+.mat-mdc-raised-button.mat-primary:hover::after,
+.mat-mdc-unelevated-button.mat-primary:hover::after { transform: translateX(100%); }
+.mat-mdc-raised-button.mat-primary:disabled,
+.mat-mdc-unelevated-button.mat-primary:disabled { background-color: #d9d9d9 !important; color: #9a9a9a !important; }
 
 /* Bouton accent (or plein) */
 .mat-mdc-raised-button.mat-accent {
@@ -288,6 +293,19 @@ html { scrollbar-width: thin; scrollbar-color: #d8d8d8 var(--luxe-offwhite); }
   background: var(--luxe-black) !important;
   color: var(--luxe-white) !important;
   transform: translateY(-1px);
+}
+
+/* Barre d’enregistrement admin (comme Identité) */
+.save-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  position: sticky;
+  bottom: 12px;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 12px;
+  border-radius: 14px;
 }
 
 /* Boutons icône */

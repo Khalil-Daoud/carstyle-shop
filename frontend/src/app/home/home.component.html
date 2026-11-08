@@ -1,0 +1,205 @@
+<div class="home-wrapper">
+  <section class="luxe-hero">
+    <div class="luxe-hero-media">
+      <video
+        *ngIf="hero.type === 'video'"
+        class="hero-media"
+        [src]="hero.videoUrl | imageUrl"
+        [poster]="hero.posterUrl | imageUrl"
+        autoplay muted loop playsinline
+        [attr.aria-label]="brand.copy.heroAria">
+      </video>
+      <img
+        *ngIf="hero.type === 'image'"
+        class="hero-media"
+        [src]="hero.imageUrl | imageUrl"
+        [alt]="brand.copy.heroAria">
+    </div>
+    <div class="luxe-hero-overlay"></div>
+    <div class="luxe-hero-content">
+      <span class="luxe-hero-tag">{{ brand.copy.tagline }}</span>
+      <h1 class="luxe-hero-title">{{ brand.copy.heroTitle }}<br><em>{{ brand.copy.heroTitleEm }}</em></h1>
+      <p class="luxe-hero-sub">{{ brand.copy.heroSubtitle }}</p>
+      <div class="luxe-hero-cta">
+        <button mat-flat-button color="primary" routerLink="/collection">Découvrir la boutique</button>
+        <a class="luxe-hero-link" routerLink="/collection" [queryParams]="{cat: 'Accessoires Intérieur'}">Nos accessoires <mat-icon>arrow_forward</mat-icon></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="luxe-trust">
+    <div class="container luxe-trust-grid">
+      <article class="trust-card">
+        <span class="trust-icon"><mat-icon>local_shipping</mat-icon></span>
+        <div class="trust-copy">
+          <strong>Livraison 48h</strong>
+          <small>Partout en Tunisie</small>
+        </div>
+      </article>
+      <article class="trust-card">
+        <span class="trust-icon"><mat-icon>verified_user</mat-icon></span>
+        <div class="trust-copy">
+          <strong>Paiement sécurisé</strong>
+          <small>Transaction protégée</small>
+        </div>
+      </article>
+      <article class="trust-card">
+        <span class="trust-icon"><mat-icon>verified</mat-icon></span>
+        <div class="trust-copy">
+          <strong>Marques pro</strong>
+          <small>Detailing & accessoires</small>
+        </div>
+      </article>
+      <article class="trust-card">
+        <span class="trust-icon"><mat-icon>support_agent</mat-icon></span>
+        <div class="trust-copy">
+          <strong>Atelier Le Bardo</strong>
+          <small>Conseil & retrait sur place</small>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="luxe-categories container">
+    <header class="luxe-sec-head left">
+      <span class="luxe-sec-eyebrow">Catégories</span>
+      <h2 class="luxe-sec-title">Explorez la boutique</h2>
+    </header>
+    <div class="luxe-cat-mosaic" *ngIf="categories.length">
+      <a class="luxe-cat-tile" *ngFor="let cat of categories; let i = index; trackBy: trackByName" [routerLink]="['/collection']" [queryParams]="{cat: cat.name}">
+        <img [src]="cat.image | imageUrl" [alt]="cat.name" loading="lazy">
+        <div class="luxe-cat-shade"></div>
+        <div class="luxe-cat-info">
+          <span class="luxe-cat-name">{{ cat.name }}</span>
+          <span class="luxe-cat-link">Découvrir <mat-icon>arrow_forward</mat-icon></span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="luxe-featured">
+    <div class="container">
+      <header class="luxe-sec-head split">
+        <div>
+          <span class="luxe-sec-eyebrow">Sélection</span>
+          <h2 class="luxe-sec-title">Meilleures ventes</h2>
+        </div>
+        <a class="luxe-text-link dark" routerLink="/collection">Toute la collection <mat-icon>east</mat-icon></a>
+      </header>
+      <div class="luxe-prod-grid">
+        <app-product-card *ngFor="let product of products; trackBy: trackById" [product]="product"></app-product-card>
+      </div>
+    </div>
+  </section>
+
+  <section class="luxe-story" *ngIf="cleaning.length">
+    <a class="story-media" routerLink="/collection" [queryParams]="{cat: 'Nettoyage & Detailing'}">
+      <img [src]="cleaningArt | imageUrl" [alt]="'Detailing ' + brand.name">
+      <div class="story-copy">
+        <span class="luxe-sec-eyebrow">Detailing</span>
+        <h2>L’entretien qui se voit</h2>
+        <p>Nettoyage, protection et finition — les essentiels de l’atelier.</p>
+        <span class="luxe-hero-link">Voir le detailing <mat-icon>arrow_forward</mat-icon></span>
+      </div>
+    </a>
+    <div class="story-products">
+      <app-product-card *ngFor="let product of cleaningPreview; trackBy: trackById" [product]="product"></app-product-card>
+    </div>
+  </section>
+
+  <section class="luxe-story reverse" *ngIf="interior.length">
+    <div class="story-products">
+      <app-product-card *ngFor="let product of interiorPreview; trackBy: trackById" [product]="product"></app-product-card>
+    </div>
+    <a class="story-media" routerLink="/collection" [queryParams]="{cat: 'Accessoires Intérieur'}">
+      <img [src]="interiorArt | imageUrl" alt="Accessoires intérieur">
+      <div class="story-copy">
+        <span class="luxe-sec-eyebrow">À bord</span>
+        <h2>Confort & rangement</h2>
+        <p>Organiseurs, confort et finitions pour habiller l’habitacle.</p>
+        <span class="luxe-hero-link">Voir les accessoires <mat-icon>arrow_forward</mat-icon></span>
+      </div>
+    </a>
+  </section>
+
+  <section class="luxe-atelier">
+    <div class="luxe-atelier-media">
+      <img [src]="brand.copy.atelierImage | imageUrl" [alt]="brand.copy.atelierTitle">
+    </div>
+    <div class="luxe-atelier-body">
+      <span class="luxe-sec-eyebrow">{{ brand.copy.atelierEyebrow }}</span>
+      <h2 class="luxe-atelier-title">{{ brand.copy.atelierTitle }}</h2>
+      <p>{{ brand.copy.atelierBody }}</p>
+      <ul class="luxe-atelier-list">
+        <li *ngFor="let bullet of brand.copy.atelierBullets"><mat-icon>check_circle</mat-icon> {{ bullet }}</li>
+      </ul>
+      <div class="atelier-cta">
+        <a class="luxe-text-link" routerLink="/contact">Nous contacter <mat-icon>east</mat-icon></a>
+        <a class="luxe-text-link" [href]="brand.whatsappUrl" target="_blank" rel="noopener">WhatsApp <mat-icon>chat</mat-icon></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="luxe-voice">
+    <div class="voice-quote"
+      (mouseenter)="pauseAutoplay()" (mouseleave)="startAutoplay()"
+      (touchstart)="onSwipeStart($event)" (touchend)="onSwipeEnd($event)">
+      <span class="luxe-sec-eyebrow">Avis clients</span>
+      <h2>{{ brand.copy.reviewsTitle }}</h2>
+      <p class="voice-score" *ngIf="reviewCount">{{ reviewAverage | number:'1.1-1' }} / 5 · {{ reviewCount }} avis</p>
+
+      <div class="voice-empty" *ngIf="!currentReview">
+        <div class="t-avatar"><mat-icon>person</mat-icon></div>
+        <p>Soyez le premier à partager votre expérience.</p>
+      </div>
+
+      <article class="voice-slide" *ngFor="let r of reviewSlide; trackBy: trackReview">
+        <div class="t-stars">
+          <mat-icon *ngFor="let s of [1,2,3,4,5]">{{ s <= r.rating ? 'star' : 'star_border' }}</mat-icon>
+        </div>
+        <blockquote>« {{ r.comment }} »</blockquote>
+        <div class="t-author">
+          <div class="t-face">
+            <div class="t-avatar" [attr.data-tone]="avatarTone(r)">
+              <img *ngIf="r.author_photo" [src]="r.author_photo | imageUrl" [alt]="r.author">
+              <mat-icon *ngIf="!r.author_photo">person</mat-icon>
+            </div>
+            <img *ngIf="r.product_image" class="t-product" [src]="r.product_image | imageUrl" [alt]="r.product_name">
+          </div>
+          <div class="t-meta">
+            <strong>{{ r.author }}</strong>
+            <span>{{ r.product_name || ('Client ' + brand.name) }}</span>
+          </div>
+        </div>
+      </article>
+
+      <div class="voice-actions">
+        <div class="voice-nav" *ngIf="homeReviews.length > 1">
+          <button type="button" class="t-nav" (click)="prevReview()" aria-label="Témoignage précédent"><mat-icon>chevron_left</mat-icon></button>
+          <div class="t-dots">
+            <button type="button" *ngFor="let r of homeReviews; let i = index" class="t-dot" [class.active]="i === activeReview"
+              (click)="goToReview(i)" [attr.aria-label]="'Voir l’avis de ' + r.author"></button>
+          </div>
+          <button type="button" class="t-nav" (click)="nextReview()" aria-label="Témoignage suivant"><mat-icon>chevron_right</mat-icon></button>
+        </div>
+        <button type="button" class="voice-write" (click)="openShopReview()">
+          <mat-icon>rate_review</mat-icon> Laisser un témoignage
+        </button>
+      </div>
+    </div>
+
+    <aside class="voice-join">
+      <span class="luxe-sec-eyebrow">Newsletter</span>
+      <h3>{{ brand.copy.newsletterTitle }}</h3>
+      <p>{{ brand.copy.newsletterBody }}</p>
+      <form class="luxe-subscribe" (submit)="subscribe(email.value); $event.preventDefault()">
+        <input #email type="email" required placeholder="Votre adresse email" aria-label="Votre adresse email">
+        <button class="voice-submit" type="submit">S’inscrire</button>
+      </form>
+      <ul class="voice-perks">
+        <li><mat-icon>mail</mat-icon> Nouveautés en avant-première</li>
+        <li><mat-icon>auto_awesome</mat-icon> Conseils detailing atelier</li>
+      </ul>
+    </aside>
+  </section>
+</div>

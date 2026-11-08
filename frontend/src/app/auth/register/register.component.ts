@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { BrandService } from '../../services/brand.service';
 
 @Component({
   selector: 'app-register',
@@ -31,8 +32,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
         <div class="brand-panel">
           <div class="brand-glow"></div>
           <div class="brand-content-wrapper">
-            <h1 class="brand-logo-large">CARSTYLE</h1>
-            <p class="brand-tagline">Accessoires auto, detailing & entretien</p>
+            <h1 class="brand-logo-large">{{ brand.name }}</h1>
+            <p class="brand-tagline">{{ brand.copy.heroSubtitle }}</p>
             <div class="line-gold"></div>
             <div class="brand-features">
               <div class="feature-item">
@@ -45,8 +46,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
               <div class="feature-item">
                 <mat-icon>auto_awesome</mat-icon>
                 <div class="feature-text">
-                  <h4>Atelier Le Bardo</h4>
-                  <p>Conseil, retrait et suivi de commande en Tunisie.</p>
+                  <h4>{{ brand.copy.atelierEyebrow }}</h4>
+                  <p>Conseil, retrait et suivi de commande.</p>
                 </div>
               </div>
               <div class="feature-item">
@@ -59,17 +60,17 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
             </div>
           </div>
           <div class="brand-footer">
-            <span>© 2026 CARSTYLE. TOUS DROITS RÉSERVÉS</span>
+            <span>© {{ brand.year }} {{ brand.legalName }}. TOUS DROITS RÉSERVÉS</span>
           </div>
         </div>
 
         <!-- Right Form Section -->
         <div class="form-panel">
           <div class="form-container fade-in">
-            <div class="mobile-logo">CARSTYLE</div>
+            <div class="mobile-logo">{{ brand.name }}</div>
             <div class="form-header">
               <h2>Créer un compte</h2>
-              <p>Rejoignez Carstyle et profitez d'avantages exclusifs.</p>
+              <p>Rejoignez {{ brand.name }} et profitez d'avantages exclusifs.</p>
             </div>
             
             <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="luxury-form">
@@ -309,7 +310,8 @@ export class RegisterComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    public brand: BrandService
   ) {
     this.registerForm = this.fb.group({
       first_name: ['', Validators.required],

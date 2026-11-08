@@ -10,20 +10,25 @@ import { filter } from 'rxjs/operators';
 import { AuthService, User } from '../services/auth.service';
 import { OrderAlert, OrderInboxService } from '../services/order-inbox.service';
 import { FormatCurrencyPipe } from '../pipes/format-currency.pipe';
+import { ImageUrlPipe } from '../pipes/image-url.pipe';
+import { BrandService } from '../services/brand.service';
 
 const COLLAPSE_KEY = 'carstyle_admin_collapsed';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, MatButtonModule, MatTooltipModule, MatMenuModule, MatBadgeModule, FormatCurrencyPipe],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, MatButtonModule, MatTooltipModule, MatMenuModule, MatBadgeModule, FormatCurrencyPipe, ImageUrlPipe],
   template: `
     <div class="admin-shell" (click)="unlockAlerts()">
       <aside class="sidebar" [class.collapsed]="collapsed" [class.open]="sidebarOpen">
-        <div class="sidebar-brand">
-          <span class="brand-logo" routerLink="/">CARSTYLE</span>
-          <span class="brand-sub">ADMIN</span>
-        </div>
+        <a class="sidebar-brand" routerLink="/" [matTooltip]="brand.name" [matTooltipDisabled]="!collapsed" matTooltipPosition="right">
+          <img [src]="brand.logoUrl | imageUrl" [alt]="brand.name" class="brand-mark" width="40" height="40">
+          <span class="brand-text">
+            <span class="brand-logo">{{ brand.name }}</span>
+            <span class="brand-sub">ADMIN</span>
+          </span>
+        </a>
 
         <nav class="sidebar-nav">
           <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item" matTooltip="Vue d'ensemble" matTooltipPosition="right">
@@ -34,25 +39,41 @@ const COLLAPSE_KEY = 'carstyle_admin_collapsed';
             <mat-icon [matBadge]="pendingOrders || null" matBadgeColor="warn" matBadgeSize="small">shopping_cart</mat-icon>
             <span>Commandes</span>
           </a>
-          <a routerLink="/admin/products" routerLinkActive="active" class="nav-item" matTooltip="Produits" matTooltipPosition="right">
+          <a routerLink="/admin/products" routerLinkActive="active" class="nav-item" *ngIf="canManageProducts" matTooltip="Produits" matTooltipPosition="right">
             <mat-icon>inventory_2</mat-icon>
             <span>Produits</span>
           </a>
-          <a routerLink="/admin/stock" routerLinkActive="active" class="nav-item" matTooltip="Stock" matTooltipPosition="right">
+          <a routerLink="/admin/stock" routerLinkActive="active" class="nav-item" *ngIf="canManageStock" matTooltip="Stock" matTooltipPosition="right">
             <mat-icon>warehouse</mat-icon>
             <span>Stock</span>
           </a>
-          <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item" matTooltip="Catégories" matTooltipPosition="right">
+          <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item" *ngIf="canManageCategories" matTooltip="Catégories" matTooltipPosition="right">
             <mat-icon>category</mat-icon>
             <span>Catégories</span>
           </a>
-          <a routerLink="/admin/users" routerLinkActive="active" class="nav-item" *ngIf="isAdmin" matTooltip="Clients & Employés" matTooltipPosition="right">
+          <a routerLink="/admin/reviews" routerLinkActive="active" class="nav-item" matTooltip="Avis" matTooltipPosition="right">
+            <mat-icon>rate_review</mat-icon>
+            <span>Avis</span>
+          </a>
+          <a routerLink="/admin/clients" routerLinkActive="active" class="nav-item" *ngIf="isAdmin" matTooltip="Clients" matTooltipPosition="right">
             <mat-icon>group</mat-icon>
-            <span>Clients & Employés</span>
+            <span>Clients</span>
+          </a>
+          <a routerLink="/admin/employees" routerLinkActive="active" class="nav-item" *ngIf="isAdmin" matTooltip="Employés" matTooltipPosition="right">
+            <mat-icon>badge</mat-icon>
+            <span>Employés</span>
+          </a>
+          <a routerLink="/admin/identity" routerLinkActive="active" class="nav-item" *ngIf="isAdmin" matTooltip="Identité" matTooltipPosition="right">
+            <mat-icon>palette</mat-icon>
+            <span>Identité</span>
           </a>
           <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item" *ngIf="isAdmin" matTooltip="Paramètres" matTooltipPosition="right">
             <mat-icon>settings</mat-icon>
             <span>Paramètres</span>
+          </a>
+          <a routerLink="/admin/historique" routerLinkActive="active" class="nav-item" *ngIf="canViewAudit" matTooltip="Historique" matTooltipPosition="right">
+            <mat-icon>history</mat-icon>
+            <span>Historique</span>
           </a>
         </nav>
 
@@ -141,17 +162,27 @@ const COLLAPSE_KEY = 'carstyle_admin_collapsed';
       z-index: 900;
     }
     .sidebar.collapsed { width: 78px; }
-    .sidebar.collapsed .brand-sub, .sidebar.collapsed .nav-item span,
+    .sidebar.collapsed .brand-text, .sidebar.collapsed .nav-item span,
     .sidebar.collapsed .user-meta, .sidebar.collapsed .sidebar-actions { display: none; }
-    .sidebar.collapsed .brand-logo { text-align: center; font-size: 1rem; letter-spacing: 3px; }
+    .sidebar.collapsed .sidebar-brand { justify-content: center; padding: 22px 12px; }
+    .sidebar.collapsed .brand-mark { width: 44px; height: 44px; }
     .sidebar.collapsed .nav-item { justify-content: center; padding: 15px; }
     .sidebar.collapsed .admin-user { justify-content: center; }
 
-    .sidebar-brand { padding: 34px 30px 26px; border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
-    .brand-logo { display: block; font-family: var(--font-heading); font-size: 1.5rem; letter-spacing: 8px; color: var(--luxe-white); cursor: pointer; }
-    .brand-sub { display: block; margin-top: 6px; font-size: 0.62rem; letter-spacing: 4px; color: var(--luxe-gold); font-weight: 600; }
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 12px; padding: 28px 22px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.08); text-decoration: none; cursor: pointer;
+    }
+    .brand-mark { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: #0a0a0a; }
+    .brand-text { min-width: 0; }
+    .brand-logo { display: block; font-family: var(--font-heading); font-size: 1.15rem; letter-spacing: 4px; color: var(--luxe-white); }
+    .brand-sub { display: block; margin-top: 4px; font-size: 0.62rem; letter-spacing: 4px; color: var(--luxe-gold); font-weight: 600; }
 
-    .sidebar-nav { flex: 1; padding: 25px 15px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+    .sidebar-nav {
+      flex: 1; padding: 25px 15px; display: flex; flex-direction: column; gap: 6px;
+      overflow-y: auto; scrollbar-width: none;
+    }
+    .sidebar-nav::-webkit-scrollbar { width: 0; height: 0; }
     .nav-item {
       display: flex; align-items: center; gap: 15px; padding: 13px 18px; border-radius: var(--radius-sm);
       color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; letter-spacing: 1px;
@@ -225,10 +256,11 @@ const COLLAPSE_KEY = 'carstyle_admin_collapsed';
       }
       .sidebar.open { transform: translateX(0); }
       .sidebar.collapsed { width: 260px; }
-      .sidebar.collapsed .brand-sub, .sidebar.collapsed .nav-item span,
+      .sidebar.collapsed .brand-text, .sidebar.collapsed .nav-item span,
       .sidebar.collapsed .user-meta, .sidebar.collapsed .sidebar-actions { display: block; }
+      .sidebar.collapsed .sidebar-brand { justify-content: flex-start; padding: 28px 22px 22px; }
+      .sidebar.collapsed .brand-mark { width: 40px; height: 40px; }
       .sidebar.collapsed .nav-item { justify-content: flex-start; padding: 13px 18px; }
-      .sidebar.collapsed .brand-logo { text-align: left; font-size: 1.5rem; letter-spacing: 8px; }
       .sidebar.collapsed .admin-user { justify-content: flex-start; }
       .sidebar-scrim { display: block; position: fixed; inset: 0; background: rgba(10,10,10,0.45); z-index: 850; }
       .topbar { padding: 0 18px; }
@@ -256,7 +288,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private inbox: OrderInboxService
+    private inbox: OrderInboxService,
+    public brand: BrandService
   ) {}
 
   ngOnInit() {
@@ -315,17 +348,40 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   get pageTitle(): string {
-    const seg = this.router.url.split('?')[0].split('/').filter(Boolean).pop() || 'dashboard';
+    const parts = this.router.url.split('?')[0].split('/').filter(Boolean);
+    if (parts.includes('clients') && parts.length > 2) return 'Fiche client';
+    const seg = parts.pop() || 'dashboard';
     const titles: any = {
       dashboard: 'Vue d\'ensemble',
       orders: 'Commandes',
       products: 'Produits',
       stock: 'Stock',
       categories: 'Catégories',
-      users: 'Clients & Employés',
-      settings: 'Paramètres'
+      reviews: 'Avis & témoignages',
+      clients: 'Clients',
+      employees: 'Employés',
+      users: 'Clients',
+      identity: 'Identité du site',
+      settings: 'Paramètres',
+      historique: 'Historique'
     };
     return titles[seg] || 'Espace administrateur';
+  }
+
+  get canViewAudit(): boolean {
+    return this.authService.hasPermission('audit.view');
+  }
+
+  get canManageProducts(): boolean {
+    return this.authService.hasPermission('products.manage');
+  }
+
+  get canManageStock(): boolean {
+    return this.authService.hasPermission('stock.manage');
+  }
+
+  get canManageCategories(): boolean {
+    return this.authService.hasPermission('categories.manage');
   }
 
   get userName(): string {

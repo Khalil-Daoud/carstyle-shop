@@ -6,7 +6,7 @@ import { API_BASE_URL } from '../config';
   standalone: true
 })
 export class ImageUrlPipe implements PipeTransform {
-  transform(value: string): string {
+  transform(value: string | null | undefined): string {
     if (!value) return '';
     if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('assets/')) return value;
 

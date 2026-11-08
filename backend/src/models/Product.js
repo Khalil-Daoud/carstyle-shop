@@ -24,6 +24,10 @@ const Product = sequelize.define('Product', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
+  cost_price: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true
+  },
   compare_price: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: true
@@ -40,6 +44,10 @@ const Product = sequelize.define('Product', {
   },
   category: {
     type: DataTypes.STRING
+  },
+  subcategory: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   timestamps: true,

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { ApiService } from './api.service';
+import { BrandService, ClientConfig } from './brand.service';
 
 export interface Currency {
   code: string;
@@ -48,13 +49,14 @@ export interface StoreSettings {
   guestCheckout: boolean;
   checkoutFields?: CheckoutField[];
   hero?: HeroSettings;
+  identity?: ClientConfig;
   loyalty?: { tiers: LoyaltyTier[] };
   whatsapp: WhatsAppSettings;
 }
 
 const DEFAULT_CURRENCY: Currency = { code: 'TND', symbol: 'DT', label: 'Dinar Tunisien' };
 const DEFAULT_WHATSAPP: WhatsAppSettings = {
-  number: '21653933751',
+  number: '',
   invite: true,
   notifyCustomer: false,
   providerReady: false,
@@ -87,6 +89,7 @@ export interface SettingsPayload {
   checkoutFields?: CheckoutField[];
   permissionGroups?: PermissionGroup[];
   hero?: Partial<HeroSettings>;
+  identity?: ClientConfig;
 }
 
 export const DEFAULT_LOYALTY_TIERS: LoyaltyTier[] = [
@@ -132,7 +135,7 @@ export class SettingsService {
   private heroSubject = new BehaviorSubject<HeroSettings>(DEFAULT_HERO);
   public hero$ = this.heroSubject.asObservable();
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private brand: BrandService) {}
 
   load(): Promise<void> {
     return firstValueFrom(this.api.get<StoreSettings>('settings'))
@@ -149,7 +152,9 @@ export class SettingsService {
   }
 
   get whatsapp(): WhatsAppSettings {
-    return this.whatsappSubject.value;
+    const current = this.whatsappSubject.value;
+    if (current.number) return current;
+    return { ...current, number: this.brand.contact?.whatsapp || '' };
   }
 
   get loyaltyTiers(): LoyaltyTier[] {
@@ -231,5 +236,8 @@ export class SettingsService {
         : DEFAULT_CHECKOUT_FIELDS
     );
     this.heroSubject.next({ ...DEFAULT_HERO, ...(settings?.hero || {}) });
+    if (settings?.identity) {
+      this.brand.applyConfig(settings.identity);
+    }
   }
 }

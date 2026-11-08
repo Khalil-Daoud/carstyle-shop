@@ -3,6 +3,23 @@ const router = express.Router();
 const { auth, authorize } = require('../middlewares/auth');
 const settingsService = require('../services/settingsService');
 const permissionService = require('../services/permissionService');
+const audit = require('../services/auditService');
+
+const SETTING_LABELS = {
+  currency: 'la devise',
+  guestCheckout: 'la commande invité',
+  whatsappNumber: 'le numéro WhatsApp',
+  notifyCustomer: 'l’envoi WhatsApp client',
+  whatsappInvite: 'l’invitation WhatsApp boutique',
+  callmebotKey: 'la clé WhatsApp',
+  ultramsgInstance: 'UltraMsg',
+  ultramsgToken: 'UltraMsg',
+  loyaltyTiers: 'la fidélité',
+  checkoutFields: 'les champs de commande',
+  hero: 'l’accueil',
+  identity: 'l’identité du site',
+  permissionGroups: 'les groupes de permissions'
+};
 
 // Paramètres publics de la boutique (devise, commande sans compte)
 router.get('/', async (req, res) => {
@@ -66,11 +83,23 @@ router.put('/', auth, authorize('admin'), async (req, res) => {
     if (req.body.hero !== undefined) {
       await settingsService.setHero(req.body.hero);
     }
+    if (req.body.identity !== undefined) {
+      await settingsService.setIdentity(req.body.identity);
+    }
+    const changed = Object.keys(req.body).filter((key) => SETTING_LABELS[key]);
+    const summary = changed.includes('permissionGroups')
+      ? 'a modifié les groupes de permissions'
+      : changed.length
+        ? `a modifié ${changed.map((key) => SETTING_LABELS[key]).join(', ')}`
+        : 'a modifié les paramètres';
+
     if (req.body.permissionGroups !== undefined) {
       const groups = await permissionService.setPermissionGroups(req.body.permissionGroups);
+      audit.log({ req, action: 'settings.update', entity: 'settings', summary });
       const publicSettings = await settingsService.getPublicSettings();
       return res.json({ ...publicSettings, access: permissionService.accessPayload(groups) });
     }
+    audit.log({ req, action: 'settings.update', entity: 'settings', summary });
     res.json(await settingsService.getPublicSettings());
   } catch (error) {
     res.status(400).json({ message: error.message });

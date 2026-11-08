@@ -8,7 +8,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { childrenOf, isRootCategory } from '../../services/catalog.types';
+import { CatalogService } from '../../services/catalog.service';
 
 @Component({
   selector: 'app-categories-manager',
@@ -22,6 +25,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
     MatSnackBarModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     FormsModule,
     ReactiveFormsModule
   ],
@@ -30,7 +34,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
       <div class="header">
         <div>
           <h2 class="luxury-title">Gestion des Catégories</h2>
-          <p>Créez et organisez les catégories utilisées pour classer vos produits.</p>
+          <p>Catégories et sous-catégories affichées dans le menu et les filtres boutique.</p>
         </div>
         <button mat-raised-button color="primary" (click)="toggleForm()" *ngIf="!showForm">
           <mat-icon>add</mat-icon> Ajouter une catégorie
@@ -48,8 +52,17 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
         <mat-card-content>
           <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nom de la catégorie</mat-label>
-              <input matInput formControlName="name" placeholder="ex: Soins Visage">
+              <mat-label>Nom</mat-label>
+              <input matInput formControlName="name" placeholder="ex: 4x4">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Catégorie parente</mat-label>
+              <mat-select formControlName="parent_id">
+                <mat-option [value]="null">Aucune — catégorie principale</mat-option>
+                <mat-option *ngFor="let c of parentOptions" [value]="c.id">{{ c.name }}</mat-option>
+              </mat-select>
+              <mat-hint>Laissez vide pour une catégorie du menu. Choisissez un parent pour une sous-catégorie (filtres, comme Tomobile).</mat-hint>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
@@ -57,10 +70,11 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
               <textarea matInput formControlName="description" rows="3" placeholder="Description de la catégorie..."></textarea>
             </mat-form-field>
 
-            <div class="form-actions">
+            <div class="save-bar">
               <button mat-flat-button color="primary" type="submit" [disabled]="categoryForm.invalid">
-                <mat-icon>save</mat-icon> Enregistrer
+                Enregistrer la catégorie
               </button>
+              <button type="button" mat-stroked-button (click)="toggleForm()">Annuler</button>
             </div>
           </form>
         </mat-card-content>
@@ -71,7 +85,14 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
         <table mat-table [dataSource]="categories" class="full-width">
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef> Nom </th>
-            <td mat-cell *matCellDef="let c"> {{c.name}} </td>
+            <td mat-cell *matCellDef="let c">
+              <span [class.child-name]="c.parent_id">{{ c.parent_id ? '↳ ' + c.name : c.name }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="parent">
+            <th mat-header-cell *matHeaderCellDef> Type </th>
+            <td mat-cell *matCellDef="let c"> {{ c.parent_id ? parentLabel(c) : 'Catégorie' }} </td>
           </ng-container>
 
           <ng-container matColumnDef="description">
@@ -114,13 +135,14 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
     .form-actions { display: flex; justify-content: flex-end; margin-top: 15px; }
     .empty-state { text-align: center; padding: 60px 20px; color: var(--luxe-text-muted); }
     .empty-state mat-icon { font-size: 3rem; width: 48px; height: 48px; margin-bottom: 12px; }
+    .child-name { color: #555; padding-left: 8px; }
   `]
 })
 export class CategoriesManagerComponent implements OnInit {
   categories: any[] = [];
   /** Nombre de produits par nom de catégorie, calculé par l'API. */
   productCounts: Record<string, number> = {};
-  displayedColumns = ['name', 'description', 'count', 'actions'];
+  displayedColumns = ['name', 'parent', 'description', 'count', 'actions'];
 
   categoryForm!: FormGroup;
   showForm = false;
@@ -129,6 +151,7 @@ export class CategoriesManagerComponent implements OnInit {
 
   constructor(
     private crud: CrudService,
+    private catalog: CatalogService,
     private snackBar: MatSnackBar,
     private fb: FormBuilder
   ) {}
@@ -142,13 +165,30 @@ export class CategoriesManagerComponent implements OnInit {
   initForm() {
     this.categoryForm = this.fb.group({
       name: ['', Validators.required],
+      parent_id: [null as string | null],
       description: ['']
     });
   }
 
+  get parentOptions(): any[] {
+    return this.categories.filter((c) => isRootCategory(c) && c.id !== this.editingCategoryId);
+  }
+
+  hasChildren(id: string): boolean {
+    return childrenOf(this.categories, id).length > 0;
+  }
+
+  parentLabel(category: any): string {
+    const parent = this.categories.find((c) => c.id === category.parent_id);
+    return parent ? `Sous-catégorie de ${parent.name}` : 'Sous-catégorie';
+  }
+
   loadCategories() {
     this.crud.getAll<any>('categories').subscribe({
-      next: data => this.categories = data,
+      next: data => {
+        const roots = data.filter((c: any) => isRootCategory(c)).sort((a: any, b: any) => a.name.localeCompare(b.name, 'fr'));
+        this.categories = roots.flatMap((root: any) => [root, ...childrenOf(data, root.id)]);
+      },
       error: () => this.snackBar.open('Erreur lors du chargement des catégories', 'Fermer', { duration: 4000 })
     });
   }
@@ -160,6 +200,9 @@ export class CategoriesManagerComponent implements OnInit {
         this.productCounts = {};
         for (const cat of meta.categories || []) {
           this.productCounts[cat.name] = cat.count;
+          for (const child of cat.children || []) {
+            this.productCounts[child.name] = child.count;
+          }
         }
       },
       error: () => { this.productCounts = {}; }
@@ -185,23 +228,25 @@ export class CategoriesManagerComponent implements OnInit {
     this.showForm = true;
     this.categoryForm.patchValue({
       name: category.name,
+      parent_id: category.parent_id || null,
       description: category.description
     });
   }
 
   saveCategory() {
     if (this.categoryForm.invalid) return;
-    const payload = this.categoryForm.value;
+    const payload = { ...this.categoryForm.value, parent_id: this.categoryForm.value.parent_id || null };
 
     if (this.isEditMode && this.editingCategoryId) {
       this.crud.update('categories', this.editingCategoryId, payload).subscribe({
         next: () => {
           this.snackBar.open('Catégorie mise à jour avec succès', 'OK', { duration: 3000 });
+          this.catalog.invalidate();
           this.loadCategories();
           this.toggleForm();
         },
         error: (err) => {
-          const msg = err?.error?.error?.includes('unique') ? 'Une catégorie avec ce nom existe déjà' : 'Erreur lors de la mise à jour de la catégorie';
+          const msg = /unique|existe déjà/i.test(String(err?.error?.error || '')) ? 'Une catégorie avec ce nom existe déjà' : 'Erreur lors de la mise à jour de la catégorie';
           this.snackBar.open(msg, 'Fermer', { duration: 4000 });
         }
       });
@@ -209,11 +254,12 @@ export class CategoriesManagerComponent implements OnInit {
       this.crud.create('categories', payload).subscribe({
         next: () => {
           this.snackBar.open('Catégorie créée avec succès', 'OK', { duration: 3000 });
+          this.catalog.invalidate();
           this.loadCategories();
           this.toggleForm();
         },
         error: (err) => {
-          const msg = err?.error?.error?.includes('unique') ? 'Une catégorie avec ce nom existe déjà' : 'Erreur lors de la création de la catégorie';
+          const msg = /unique|existe déjà/i.test(String(err?.error?.error || '')) ? 'Une catégorie avec ce nom existe déjà' : 'Erreur lors de la création de la catégorie';
           this.snackBar.open(msg, 'Fermer', { duration: 4000 });
         }
       });
@@ -229,6 +275,7 @@ export class CategoriesManagerComponent implements OnInit {
       this.crud.delete('categories', category.id).subscribe({
         next: () => {
           this.snackBar.open('Catégorie supprimée', 'OK', { duration: 3000 });
+          this.catalog.invalidate();
           this.loadCategories();
         },
         error: () => this.snackBar.open('Erreur lors de la suppression de la catégorie', 'Fermer', { duration: 4000 })

@@ -3,16 +3,18 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { BrandService } from '../../services/brand.service';
+import { ImageUrlPipe } from '../../pipes/image-url.pipe';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule, MatSnackBarModule],
+  imports: [CommonModule, RouterLink, MatIconModule, MatSnackBarModule, ImageUrlPipe],
   template: `
     <footer class="luxe-footer">
       <div class="luxe-certifications">
         <div class="luxe-cert"><mat-icon>local_shipping</mat-icon><span><strong>Livraison 48h</strong><small>Partout en Tunisie</small></span></div>
-        <div class="luxe-cert"><mat-icon>flag</mat-icon><span><strong>Atelier Le Bardo</strong><small>Conseil & retrait</small></span></div>
+        <div class="luxe-cert"><mat-icon>flag</mat-icon><span><strong>{{ brand.copy.footerCertPickup }}</strong><small>Conseil & retrait</small></span></div>
         <div class="luxe-cert"><mat-icon>verified</mat-icon><span><strong>Produits pro</strong><small>Detailing & accessoires</small></span></div>
         <div class="luxe-cert"><mat-icon>payments</mat-icon><span><strong>Paiement à la livraison</strong><small>Espèces ou carte</small></span></div>
       </div>
@@ -20,15 +22,19 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
       <div class="luxe-footer-grid">
         <div class="luxe-footer-brand">
           <div class="luxe-logo">
-            <img src="assets/logo.webp" alt="Carstyle" class="logo-img" width="36" height="36">
-            <span>CAR<span class="logo-accent">STYLE</span></span>
+            <img [src]="brand.logoUrl | imageUrl" [alt]="brand.name" class="logo-img" width="36" height="36" loading="lazy" decoding="async">
+            <span>{{ brand.nameStart }}<span class="logo-accent" *ngIf="brand.nameAccent">{{ brand.nameAccent }}</span></span>
           </div>
-          <p>Boutique tunisienne d'accessoires auto, detailing et entretien. Habiller, protéger et personnaliser votre véhicule.</p>
+          <p>{{ brand.copy.footerBlurb }}</p>
           <div class="luxe-socials">
-            <a href="https://www.facebook.com/profile.php?id=100082205727145" target="_blank" rel="noopener" aria-label="Facebook">
+            <a *ngIf="brand.social.facebook" [href]="brand.social.facebook" target="_blank" rel="noopener" aria-label="Facebook">
               <mat-icon>facebook</mat-icon>
             </a>
-            <a href="https://www.instagram.com/carstyle_tunisia" target="_blank" rel="noopener" aria-label="Instagram"><mat-icon>instagram</mat-icon></a>
+            <a *ngIf="brand.social.instagram" [href]="brand.social.instagram" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zm5.25-3.25a1.1 1.1 0 1 1-1.1 1.1 1.1 1.1 0 0 1 1.1-1.1z"/>
+              </svg>
+            </a>
           </div>
         </div>
 
@@ -52,9 +58,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
         <div class="luxe-footer-col luxe-footer-contact">
           <h4>NOUS CONTACTER</h4>
           <a routerLink="/contact" class="luxe-contact-link"><mat-icon>chat_outline</mat-icon> Page contact</a>
-          <p><mat-icon>mail_outline</mat-icon> contact&#64;carstyle.tn</p>
-          <p><mat-icon>phone_in_talk</mat-icon> +216 53 933 751</p>
-          <p><mat-icon>location_on</mat-icon> Avenue Bayrem Ettounsi, Le Bardo 2000, Tunisie</p>
+          <p><mat-icon>mail_outline</mat-icon> {{ brand.contact.email }}</p>
+          <p><mat-icon>phone_in_talk</mat-icon> {{ brand.contact.phoneDisplay }}</p>
+          <p><mat-icon>location_on</mat-icon> {{ brand.contact.addressLine1 }}, {{ brand.contact.addressLine2 }}</p>
           <form class="luxe-newsletter" (submit)="subscribe(email.value); $event.preventDefault()">
             <input #email type="email" required placeholder="Votre e-mail" aria-label="Votre adresse e-mail">
             <button type="submit" aria-label="S'abonner à la newsletter"><mat-icon>arrow_forward</mat-icon></button>
@@ -72,7 +78,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
       </div>
 
       <div class="luxe-copyright">
-        &copy; 2026 CARSTYLE. Tous droits réservés. &mdash; Accessoires auto, Le Bardo.
+        &copy; {{ brand.year }} {{ brand.legalName }}. Tous droits réservés. &mdash; {{ brand.copy.copyrightExtra }}
       </div>
     </footer>
   `,
@@ -81,7 +87,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
       background: var(--luxe-black);
       color: var(--luxe-white);
       padding: 90px 40px 30px;
-      margin-top: 110px;
+      margin-top: 0;
     }
 
     .luxe-certifications {
@@ -91,9 +97,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     }
     .luxe-cert { display: flex; align-items: center; gap: 18px; justify-content: center; }
     .luxe-cert mat-icon {
-      font-size: 38px; width: 38px; height: 38px; color: var(--luxe-gold);
-      padding: 12px; border: 1px solid rgba(198,160,74,0.35); border-radius: 50%;
-      background: rgba(198,160,74,0.06); box-sizing: content-box;
+      font-size: 28px; width: 28px; height: 28px; line-height: 28px;
+      color: var(--luxe-gold);
+      padding: 10px; border: 1px solid rgba(255,255,255,0.18); border-radius: 50%;
+      background: rgba(255,255,255,0.06); box-sizing: content-box;
+      display: grid; place-items: center; overflow: hidden;
     }
     .luxe-cert strong { display: block; color: var(--luxe-white); font-size: 0.95rem; letter-spacing: 0.5px; }
     .luxe-cert small { color: #9a9a9a; font-weight: 300; font-size: 0.78rem; }
@@ -117,11 +125,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     .luxe-socials a {
       width: 42px; height: 42px; border-radius: 50%;
       border: 1px solid rgba(255,255,255,0.2);
-      display: flex; align-items: center; justify-content: center;
+      display: grid; place-items: center;
       color: var(--luxe-white); text-decoration: none;
       transition: all 0.3s ease;
     }
-    .luxe-socials a mat-icon { font-size: 20px; width: 20px; height: 20px; }
+    .luxe-socials a mat-icon { font-size: 20px; width: 20px; height: 20px; line-height: 20px; display: block; }
+    .luxe-socials a svg { display: block; }
     .luxe-socials a:hover { background: var(--luxe-gold); border-color: var(--luxe-gold); color: var(--luxe-black); transform: translateY(-3px); }
     .luxe-footer-col h4 {
       font-family: var(--font-body); font-size: 0.75rem; letter-spacing: 4px;
@@ -183,7 +192,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   `]
 })
 export class FooterComponent {
-  constructor(private snackBar: MatSnackBar) {}
+  constructor(private snackBar: MatSnackBar, public brand: BrandService) {}
 
   subscribe(email: string) {
     this.snackBar.open('Merci ! Votre inscription à la newsletter a bien été enregistrée.', 'Fermer', { duration: 3500 });

@@ -24,6 +24,11 @@ const OrderItem = sequelize.define('OrderItem', {
   unit_price: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
+  },
+  // Coût figé à la vente : le prix d'achat actuel du produit peut changer plus tard.
+  unit_cost: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true
   }
 }, {
   timestamps: true,

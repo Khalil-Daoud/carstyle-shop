@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { SettingsService, PermissionGroup } from '../../services/settings.service';
 
@@ -78,16 +79,12 @@ export class ResetPasswordDialogComponent {
   template: `
     <div class="manager-container fade-in">
       <div class="header">
-        <h2 class="luxury-title">Clients & Employés</h2>
-        <p>Gérez les comptes clients et ajoutez des comptes employés.</p>
+        <h2 class="luxury-title">{{ isClients ? 'Clients' : 'Employés' }}</h2>
+        <p *ngIf="isClients">Cliquez un client pour ouvrir sa fiche : commandes, avis et coordonnées.</p>
+        <p *ngIf="!isClients">Comptes employés et administrateurs, avec leur groupe de permissions.</p>
       </div>
 
       <div class="toolbar">
-        <div class="tabs">
-          <button class="tab" [ngClass]="{'active': filter === 'all'}" (click)="setFilter('all')">Tous ({{allCount}})</button>
-          <button class="tab" [ngClass]="{'active': filter === 'client'}" (click)="setFilter('client')">Clients ({{clientCount}})</button>
-          <button class="tab" [ngClass]="{'active': filter === 'employee'}" (click)="setFilter('employee')">Employés ({{employeeCount}})</button>
-        </div>
         <mat-form-field appearance="outline" class="search-field">
           <mat-icon matPrefix>search</mat-icon>
           <mat-label>Rechercher (nom, email)</mat-label>
@@ -95,7 +92,7 @@ export class ResetPasswordDialogComponent {
         </mat-form-field>
         <button mat-raised-button color="primary" (click)="showForm = !showForm">
           <mat-icon>{{showForm ? 'close' : 'person_add'}}</mat-icon>
-          {{showForm ? 'Annuler' : 'Ajouter un compte'}}
+          {{showForm ? 'Annuler' : (isClients ? 'Ajouter un client' : 'Ajouter un employé')}}
         </button>
       </div>
 
@@ -118,10 +115,9 @@ export class ResetPasswordDialogComponent {
             <mat-label>Mot de passe (min. 6)</mat-label>
             <input matInput type="password" [(ngModel)]="newUser.password">
           </mat-form-field>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" *ngIf="!isClients">
             <mat-label>Rôle</mat-label>
             <mat-select [(ngModel)]="newUser.role">
-              <mat-option value="client">Client</mat-option>
               <mat-option value="seller">Employé</mat-option>
               <mat-option value="admin">Administrateur</mat-option>
             </mat-select>
@@ -133,9 +129,12 @@ export class ResetPasswordDialogComponent {
             </mat-select>
           </mat-form-field>
         </div>
-        <button mat-flat-button color="primary" [disabled]="!canCreate" (click)="createUser()">
-          <mat-icon>save</mat-icon> Créer le compte
-        </button>
+        <div class="save-bar">
+          <button mat-flat-button color="primary" [disabled]="!canCreate" (click)="createUser()">
+            Créer le compte
+          </button>
+          <button type="button" mat-stroked-button (click)="showForm = false">Annuler</button>
+        </div>
       </div>
 
       <div class="table-wrapper glass-panel">
@@ -195,22 +194,25 @@ export class ResetPasswordDialogComponent {
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef> Actions </th>
             <td mat-cell *matCellDef="let user">
-              <button mat-icon-button color="primary" matTooltip="Réinitialiser le mot de passe" (click)="resetPassword(user)">
+              <button *ngIf="isClients" mat-icon-button color="primary" matTooltip="Voir la fiche" (click)="openFiche(user, $event)">
+                <mat-icon>badge</mat-icon>
+              </button>
+              <button mat-icon-button color="primary" matTooltip="Réinitialiser le mot de passe" (click)="$event.stopPropagation(); resetPassword(user)">
                 <mat-icon>key</mat-icon>
               </button>
-              <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="deleteUser(user)">
+              <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="$event.stopPropagation(); deleteUser(user)">
                 <mat-icon>delete</mat-icon>
               </button>
             </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.clickable]="isClients" (click)="openFiche(row)"></tr>
         </table>
 
         <div class="empty-state" *ngIf="filteredUsers.length === 0">
           <mat-icon>group_off</mat-icon>
-          <p>Aucun utilisateur ne correspond à votre recherche.</p>
+          <p>{{ isClients ? 'Aucun client ne correspond à votre recherche.' : 'Aucun employé ne correspond à votre recherche.' }}</p>
         </div>
 
         <app-pagination [pageIndex]="pageIndex" [pageSize]="pageSize" [totalItems]="filteredUsers.length"
@@ -247,6 +249,8 @@ export class ResetPasswordDialogComponent {
     .role-select { width: 130px; }
     .group-select { width: 160px; }
 
+    tr.clickable { cursor: pointer; }
+    tr.clickable:hover { background: var(--luxe-offwhite); }
     .empty-state { text-align: center; padding: 60px 20px; color: var(--luxe-text-muted); }
     .empty-state mat-icon { font-size: 3rem; width: 48px; height: 48px; margin-bottom: 12px; }
 
@@ -260,9 +264,15 @@ export class ResetPasswordDialogComponent {
 export class UsersManagerComponent implements OnInit {
   users: any[] = [];
   filteredUsers: any[] = [];
-  filter: 'all' | 'client' | 'employee' = 'all';
+  filter: 'client' | 'employee' = 'client';
   showForm = false;
-  displayedColumns: string[] = ['username', 'role', 'group', 'points', 'created', 'actions'];
+
+  get isClients(): boolean { return this.filter === 'client'; }
+  get displayedColumns(): string[] {
+    return this.isClients
+      ? ['username', 'points', 'created', 'actions']
+      : ['username', 'role', 'group', 'created', 'actions'];
+  }
 
   newUser: any = { first_name: '', last_name: '', email: '', password: '', role: 'client', permission_group_id: 'seller' };
   staffGroups: PermissionGroup[] = [];
@@ -277,9 +287,18 @@ export class UsersManagerComponent implements OnInit {
   resetPage() { this.pageIndex = 0; }
   onPageChange(index: number) { this.pageIndex = index; }
 
-  constructor(private crud: CrudService, private snackBar: MatSnackBar, private dialog: MatDialog, private settings: SettingsService) {}
+  constructor(
+    private crud: CrudService,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog,
+    private settings: SettingsService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   ngOnInit() {
+    this.filter = this.route.snapshot.data['mode'] === 'employee' ? 'employee' : 'client';
+    this.newUser.role = this.isClients ? 'client' : 'seller';
     this.loadUsers();
     this.settings.loadAccess().then((access) => {
       this.staffGroups = (access.groups || []).filter((g) => g.id !== 'admin');
@@ -310,13 +329,10 @@ export class UsersManagerComponent implements OnInit {
     });
   }
 
-  get allCount() { return this.users.length; }
-  get clientCount() { return this.users.filter(u => u.role === 'client').length; }
-  get employeeCount() { return this.users.filter(u => u.role === 'seller' || u.role === 'admin').length; }
-
-  setFilter(filter: 'all' | 'client' | 'employee') {
-    this.filter = filter;
-    this.applyFilter();
+  openFiche(user: any, event?: Event) {
+    if (!this.isClients) return;
+    event?.stopPropagation();
+    this.router.navigate(['/admin/clients', user.id]);
   }
 
   applyFilter() {
@@ -346,7 +362,7 @@ export class UsersManagerComponent implements OnInit {
       next: () => {
         this.snackBar.open('Compte créé avec succès', 'OK', { duration: 3000 });
         this.showForm = false;
-        this.newUser = { first_name: '', last_name: '', email: '', password: '', role: 'client', permission_group_id: 'seller' };
+        this.newUser = { first_name: '', last_name: '', email: '', password: '', role: this.isClients ? 'client' : 'seller', permission_group_id: 'seller' };
         this.loadUsers();
       },
       error: () => this.snackBar.open('Erreur lors de la création du compte', 'Fermer', { duration: 4000 })

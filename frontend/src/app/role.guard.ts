@@ -17,6 +17,11 @@ export class RoleGuard implements CanActivate {
       this.router.navigate(['/auth/login']);
       return false;
     }
+    const permission = route.data['permission'];
+    if (permission && !this.authService.hasPermission(permission)) {
+      this.router.navigate([permission === 'admin.access' ? '/' : '/admin/dashboard']);
+      return false;
+    }
     return true;
   }
 }
